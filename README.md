@@ -19,8 +19,8 @@ inseguridad— con **foto + ubicación GPS**. Cada reporte queda en el mapa con 
 
 - **Repositorio:** https://github.com/caesar-dat-com/proyecto-final-moviles (rama `proyecto-final-cesar-reyes` mezclada en `main`)
 - **Prototipo navegable:** https://caesar-dat-com.github.io/proyecto-final-moviles/prototipo/
-  (enlace previsto: funciona cuando se active GitHub Pages en el repositorio; mientras tanto, abrir
-  [`prototipo/index.html`](./prototipo/index.html) con doble clic). Es un prototipo HTML hecho con
+  (publicado y en línea con GitHub Pages; también se puede abrir
+  [`prototipo/index.html`](./prototipo/index.html) con doble clic, funciona sin servidor). Es un prototipo HTML hecho con
   asistencia de IA que **sustituye al de Lovable**; ver [`prototipo/README.md`](./prototipo/README.md).
 - **Documento final (alcance, arquitectura y tecnologías):** [`DOCUMENTO_FINAL.md`](./DOCUMENTO_FINAL.md)
 - **Auditoría contra la rúbrica:** [`RUBRICA.md`](./RUBRICA.md)
@@ -221,7 +221,7 @@ navegador), `capturas/`.
 - **Sin APK ni prueba en teléfono**: GPS, cámara, vibración y sensores se verificaron en Chrome
   (ubicación simulada); ver [`MOVIL.md`](./MOVIL.md).
 - **Prototipo**: no es de Lovable y se hizo después de la app, replicándola; el mapa del prototipo es
-  una ilustración SVG. El enlace de GitHub Pages no funciona hasta que se active Pages.
+  una ilustración SVG.
 - **Challenges**: el 15 no se probó con Supabase real y el 17 no se probó con la API real de GIPHY
   (falta llave propia); el mapeo de números 14-17 debe confirmarlo el profesor.
 - **Tiempo real en modo local**: solo entre pestañas del mismo navegador (BroadcastChannel); entre
