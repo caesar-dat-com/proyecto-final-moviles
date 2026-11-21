@@ -1,0 +1,293 @@
+[
+ {
+  "limpiarStorage": true
+ },
+ {
+  "wait": 1000
+ },
+ {
+  "escribir": [
+   "ion-input[data-test=\"email\"] >>> input",
+   "ciudadano@demo.local"
+  ]
+ },
+ {
+  "escribir": [
+   "ion-input[data-test=\"password\"] >>> input",
+   "demo123"
+  ]
+ },
+ {
+  "click": "ion-button[data-test=\"btn-login\"]"
+ },
+ {
+  "wait": 1500
+ },
+ {
+  "goto": "/app/challenges"
+ },
+ {
+  "wait": 1200
+ },
+ {
+  "shot": "menu-challenges"
+ },
+ {
+  "goto": "/app/challenges/14"
+ },
+ {
+  "wait": 1000
+ },
+ {
+  "shot": "c14-sensores-inicio"
+ },
+ {
+  "goto": "/app/challenges/14/geolocalizacion"
+ },
+ {
+  "wait": 800
+ },
+ {
+  "click": "ion-button[data-test=\"btn-posicion\"]"
+ },
+ {
+  "wait": 3000
+ },
+ {
+  "shot": "c14-geolocalizacion"
+ },
+ {
+  "goto": "/app/challenges/14/camara"
+ },
+ {
+  "wait": 800
+ },
+ {
+  "subirFoto": [
+   "ion-button[data-test=\"btn-foto\"]",
+   "scripts/fixtures/foto-prueba.jpg"
+  ]
+ },
+ {
+  "wait": 1500
+ },
+ {
+  "shot": "c14-camara"
+ },
+ {
+  "goto": "/app/challenges/14/movimiento"
+ },
+ {
+  "wait": 800
+ },
+ {
+  "click": "ion-button[data-test=\"btn-simular-motion\"]"
+ },
+ {
+  "wait": 400
+ },
+ {
+  "shot": "c14-acelerometro"
+ },
+ {
+  "goto": "/app/challenges/14/dispositivo"
+ },
+ {
+  "wait": 1500
+ },
+ {
+  "shot": "c14-dispositivo"
+ },
+ {
+  "goto": "/app/challenges/14/haptica"
+ },
+ {
+  "wait": 800
+ },
+ {
+  "click": "ion-button[data-test=\"btn-vibrar\"]"
+ },
+ {
+  "wait": 200
+ },
+ {
+  "shot": "c14-vibracion"
+ },
+ {
+  "goto": "/app/challenges/14/red"
+ },
+ {
+  "wait": 1000
+ },
+ {
+  "shot": "c14-red"
+ },
+ {
+  "goto": "/app/challenges/15"
+ },
+ {
+  "wait": 1200
+ },
+ {
+  "escribir": [
+   "ion-input[data-test=\"input-tarea\"] >>> input",
+   "Leer diapositivas de Supabase"
+  ]
+ },
+ {
+  "click": "ion-button[data-test=\"btn-agregar-tarea\"]"
+ },
+ {
+  "wait": 600
+ },
+ {
+  "escribir": [
+   "ion-input[data-test=\"input-tarea\"] >>> input",
+   "Crear tabla tareas con RLS"
+  ]
+ },
+ {
+  "click": "ion-button[data-test=\"btn-agregar-tarea\"]"
+ },
+ {
+  "wait": 600
+ },
+ {
+  "escribir": [
+   "ion-input[data-test=\"input-tarea\"] >>> input",
+   "Subir foto al bucket avatars"
+  ]
+ },
+ {
+  "click": "ion-button[data-test=\"btn-agregar-tarea\"]"
+ },
+ {
+  "wait": 600
+ },
+ {
+  "click": "ion-list[data-test=\"lista-tareas\"] ion-checkbox"
+ },
+ {
+  "wait": 600
+ },
+ {
+  "subirFoto": [
+   "ion-button[data-test=\"btn-avatar\"]",
+   "scripts/fixtures/foto-prueba.jpg"
+  ]
+ },
+ {
+  "wait": 1800
+ },
+ {
+  "shot": "c15-tareas"
+ },
+ {
+  "goto": "/app/challenges/16"
+ },
+ {
+  "wait": 3000
+ },
+ {
+  "click": "ion-button[data-test=\"btn-iniciar\"]"
+ },
+ {
+  "wait": 1200
+ },
+ {
+  "click": "ion-button[data-test=\"btn-simular-paso\"]"
+ },
+ {
+  "wait": 300
+ },
+ {
+  "click": "ion-button[data-test=\"btn-simular-paso\"]"
+ },
+ {
+  "wait": 300
+ },
+ {
+  "click": "ion-button[data-test=\"btn-simular-paso\"]"
+ },
+ {
+  "wait": 300
+ },
+ {
+  "click": "ion-button[data-test=\"btn-simular-paso\"]"
+ },
+ {
+  "wait": 2500
+ },
+ {
+  "shot": "c16-seguimiento"
+ },
+ {
+  "click": "ion-button[data-test=\"btn-detener\"]"
+ },
+ {
+  "wait": 1200
+ },
+ {
+  "subirFoto": [
+   "ion-button[data-test=\"btn-foto-marca\"]",
+   "scripts/fixtures/foto-prueba.jpg"
+  ]
+ },
+ {
+  "wait": 2000
+ },
+ {
+  "shot": "c16-guardado-y-foto-marca"
+ },
+ {
+  "goto": "/app/challenges/16/historial"
+ },
+ {
+  "wait": 3000
+ },
+ {
+  "shot": "c16-historial"
+ },
+ {
+  "goto": "/app/challenges/17"
+ },
+ {
+  "wait": 1000
+ },
+ {
+  "shot": "c17-giphy-inicio"
+ },
+ {
+  "escribir": [
+   "ion-searchbar[data-test=\"buscar-gif\"] >>> input",
+   "gatos"
+  ]
+ },
+ {
+  "esperarTexto": "resultados para"
+ },
+ {
+  "wait": 2000
+ },
+ {
+  "shot": "c17-giphy-resultados"
+ },
+ {
+  "goto": "/app/challenges/17"
+ },
+ {
+  "wait": 1000
+ },
+ {
+  "escribir": [
+   "ion-searchbar[data-test=\"buscar-gif\"] >>> input",
+   "error500"
+  ]
+ },
+ {
+  "wait": 2000
+ },
+ {
+  "shot": "c17-giphy-error"
+ }
+]

@@ -3,7 +3,8 @@
 **Proyecto:** ReportaCali — reportes urbanos geolocalizados («Reporta lo que ves, arregla tu barrio»)
 **Curso:** Desarrollo de Software para Plataformas Móviles (UAO, 14780)
 **Integrante:** César Armando Reyes (entrega individual, rama `proyecto-final-cesar-reyes`)
-**Prototipo:** PENDIENTE (prototipo Lovable)
+**Repositorio:** https://github.com/caesar-dat-com/proyecto-final-moviles
+**Prototipo:** https://caesar-dat-com.github.io/proyecto-final-moviles/prototipo/ (enlace previsto; activo cuando se habilite GitHub Pages) — código en `prototipo/`
 **Fecha:** noviembre de 2026
 
 ---
@@ -88,7 +89,9 @@ visibles de las entidades viven en `src/helpers/brand.js`, y las tablas conserva
   `RequestModal`, `NetworkBadge`, `Direccion`, y `components/shared/` con `Menu.jsx` +
   `Menu.module.scss` y `Header.jsx`.
 - `hooks/`: los custom hooks de la tabla siguiente.
-- `routes/`: `AppRoutes.jsx`, `UserRoutes.jsx` y `AdminRoutes.jsx`.
+- `routes/`: `AppRoutes.jsx`, `UserRoutes.jsx` y `AdminRoutes.jsx`, más `ChallengeRoutes.jsx`, que
+  ambas (`UserRoutes` y `AdminRoutes`) incluyen para las páginas de los Challenges 14-17
+  (`pages/Challenges/`).
 
 ### 3.3 Custom hooks
 
@@ -103,6 +106,7 @@ visibles de las entidades viven en `src/helpers/brand.js`, y las tablas conserva
 | `useNetwork` | `Network.getStatus` y el evento `networkStatusChange`. |
 | `useLocalStorage(clave, inicial)` | Estado de React persistido en la memoria local. |
 | `useHaptics` | Impacto, notificación de éxito y vibración. |
+| `useAccelerometer`, `useDevice`, `useGiphy` | Usados por los Challenges 14, 16 y 17: acelerómetro y orientación (`@capacitor/motion`), información y batería del dispositivo (`@capacitor/device`) y búsqueda en GIPHY. |
 
 ### 3.4 Rutas protegidas
 
@@ -151,6 +155,22 @@ en la de un reporte que exista. Nadie puede cambiarse el rol. El bucket `avatars
 en la carpeta `<uid>/` propia. Realtime está activo para `messages`, `requests` y `places`.
 Todo está en `supabase/schema.sql`; los datos de ejemplo en `supabase/seed.sql`.
 
+**Prueba real del backend.** Ejecuté `schema.sql` y `seed.sql` contra un **PostgreSQL 16 real**, con
+`supabase/local-shim.sql` simulando lo que trae Supabase (roles `anon`/`authenticated`, `auth.uid()`,
+`storage`, publicación `supabase_realtime`), y corrí pruebas de RLS, de cliente y de Realtime
+(`supabase/pruebas-locales/`, salidas reales en `salidas/`). Lo que encontré y corregí:
+
+| Problema | Corrección |
+|---|---|
+| El schema no se podía ejecutar dos veces (19 errores «already exists»; en el SQL Editor aborta todo) y `seed.sql` duplicaba dependencias | `drop policy if exists` antes de cada política, publicación Realtime en un bloque `DO` que solo agrega lo que falta, seed con `where not exists` |
+| Borrar un usuario fallaba por llave foránea | `on delete cascade` en `requests.user_id` y `messages.user_id` |
+| Un ciudadano podía firmar mensajes con el nombre de otro (p. ej. del funcionario) | Trigger `fijar_nombre_autor` (`security definer`) que toma `autor` y `cliente_nombre` del perfil |
+| Storage sin política SELECT: `upload(..., { upsert: true })` fallaba | Política «ver mis archivos» (SELECT solo en la carpeta propia de `avatars`) |
+
+Las 22 pruebas de RLS dieron el resultado esperado (por ejemplo: un ciudadano no puede crear reportes a
+nombre de otro, ni cambiarse el rol, ni avanzar estados; el anónimo no ve nada). Por diseño los reportes
+son públicos para los vecinos; quien quiera privacidad estricta tiene `opcional-privacidad-estricta.sql`.
+
 ## 5. Tecnologías usadas y justificación
 
 | Tecnología | Versión | Por qué la usé |
@@ -198,21 +218,47 @@ La rúbrica menciona Firebase, pero usé **Supabase** por estas razones:
 | Vibración | `@capacitor/haptics` | Confirmación al enviar un reporte y al activar el seguimiento en el mapa. |
 | Estado de la red | `@capacitor/network` | Indicador de conexión y bloqueo de escrituras sin red. |
 | Memoria local | `localStorage` | Sesión y base del modo local, categoría elegida, caché de direcciones de Nominatim. |
+| Acelerómetro / orientación | `@capacitor/motion` | Challenges 14 y 16 (detección de movimiento durante el seguimiento). |
+| Información y batería | `@capacitor/device` | Challenges 14 y 16 (aviso de batería baja). |
+
+Todo lo anterior se verificó en Chrome (con ubicación simulada); **no se ha probado en un teléfono** ni
+se ha compilado el APK (ver `MOVIL.md`).
 
 ## 7. Relación con los temas del curso
 
 | Tema | Dónde lo apliqué |
 |---|---|
 | React (componentes, props, estado, efectos, contexto) | Toda la app; `AuthContext` para la sesión. |
-| Custom hooks | Nueve hooks, uno por capacidad. |
+| Custom hooks | Doce hooks, uno por capacidad (nueve de la app y tres de los challenges). |
 | Sensores (Clase 08) | GPS, cámara, vibración y red (sección 6). |
 | Memoria / storage (Clase 07) | `useLocalStorage`, modo local y caché de geocoding. |
 | Bases de datos y login real (Clases 07 y 09) | Supabase Auth + PostgreSQL con RLS; `useCollection`. |
 | Comunicación en tiempo real | Chat por reporte y Comunidad; listas, mapa y panel que se actualizan solos. |
 | Mapas y APIs (Clases 10 y 11) | Leaflet + OpenStreetMap; Nominatim para geocoding inverso. |
-| Diseño UI | Paleta del Color Generator, componentes Ionic, CSS Modules. |
+| Diseño UI | Paleta del Color Generator, componentes Ionic, CSS Modules; prototipo navegable en `prototipo/`. |
+| Challenges 14-17 | Integrados en la app (`/app/challenges`) y documentados en `challenges/` (ver sección 8). |
 
-## 8. Verificación realizada
+## 8. Challenges 14-17 y prototipo
+
+**Challenges.** Los retos del corte 3 se reconstruyeron de la última diapositiva de las clases 08-11
+(allí se titulan «CHALLENGE 07, 08, 08 y 09»; la correspondencia con los números 14-17 es una
+suposición documentada en `challenges/README.md`). Sus páginas viven dentro de la app, enlazadas desde
+el menú lateral, sin tocar las rutas principales:
+
+| # | Tema | Probado |
+|---|---|---|
+| 14 | Una página por sensor (GPS, cámara, acelerómetro, dispositivo, vibración, red) | Capturas en Chrome |
+| 15 | Tareas con Supabase (RLS, auth, CRUD, lista en vivo, foto) | Modo local; `tareas.sql` no ejecutado en Supabase |
+| 16 | Seguimiento en mapa con sensores e historial JSON | 8/8 pruebas de lógica + capturas |
+| 17 | Buscador GIPHY (fetch, `.env`, `AbortController`, errores) | 10/10 pruebas contra un simulador; sin llave real |
+
+**Prototipo.** El prototipo de Lovable no estuvo disponible, así que lo sustituí por un prototipo
+navegable en HTML/CSS/JS (hecho con asistencia de IA) en `prototipo/`: 19 pantallas, modo «navegar»
+en un teléfono y tablero de flujos, sin dependencias ni red. Se construyó **después** de la app y a
+partir de sus capturas, por eso coinciden en colores, textos y disposición (ver `RUBRICA.md`); la única
+diferencia visible es que su mapa es una ilustración SVG.
+
+## 9. Verificación realizada
 
 - `npm run build` compila sin errores (solo el aviso de Vite por el tamaño del paquete).
 - Con `npm run dev`, `curl` a `http://localhost:5173/` responde HTTP 200.
@@ -225,22 +271,30 @@ La rúbrica menciona Firebase, pero usé **Supabase** por estas razones:
   otra sin recargar.
 - `npm run prueba:formato` confirma que `formatearPrecio` devuelve «3 días hábiles» / «1 día hábil» y
   que con `formato: 'moneda'` sigue devolviendo «$ 60.000».
+- `npm run prueba:rutas` entra como ciudadano y como funcionario y abre las 34 rutas (principales y
+  de los challenges) sin errores de página.
+- Pruebas de los challenges con `node --test` (8/8 y 10/10) y del backend en PostgreSQL 16
+  (`supabase/pruebas-locales/salidas/`).
+- Repetí todo lo anterior en el cierre del 21-nov-2026; las salidas están en `RUBRICA.md`.
 
-## 9. Limitaciones honestas
+## 10. Limitaciones honestas
 
-- **No hay proyecto Supabase**: el código del SDK y `schema.sql` están completos, pero no los he
-  ejecutado contra un backend real. Todo lo verificado es el modo local. Las políticas RLS pueden
-  necesitar ajustes al probarlas de verdad.
+- **No hay proyecto en supabase.com**: el SQL está probado en PostgreSQL 16 con un shim que imita a
+  Supabase, pero el login, Realtime y Storage del SDK no se han ejecutado contra Supabase. En el
+  navegador todo lo verificado es el modo local.
 - **El tiempo real del modo local** solo funciona entre pestañas del mismo navegador; entre
   dispositivos distintos se necesita Supabase Realtime.
-- **Cámara y vibración en el navegador**: la cámara abre el selector de archivos y la vibración no hace
-  nada; con Capacitor en el teléfono funcionan, pero no generé ni probé el APK.
+- **Sin APK y sin prueba en teléfono**: en el navegador la cámara abre el selector de archivos y la
+  vibración no hace nada. No había Android SDK en el equipo de cierre; los pasos están en `MOVIL.md`.
 - **La foto de las capturas** es un dibujo generado para la prueba automática, no una foto real.
 - **Nominatim** es un servicio comunitario limitado a 1 petición por segundo; para un uso real haría
   falta un servidor propio o un proveedor comercial. Sus direcciones dependen de los datos de
   OpenStreetMap y pueden ser imprecisas.
 - **Las dependencias** usan nombres de entidades reales de Cali, pero las coordenadas son aproximadas y
   los tiempos de respuesta son ilustrativos.
-- **El prototipo de Lovable** no estaba disponible al construir la app, así que no pude comparar el
-  aspecto visual con él.
+- **El prototipo no es de Lovable** y se hizo después de la app, replicándola; no guió el diseño.
+  Su enlace en GitHub Pages funciona solo cuando se active Pages.
+- **Firebase**: no se usa; lo sustituye Supabase (sección 5.1).
+- **Challenges**: el 15 no se probó con Supabase real, el 17 no se probó con la API real de GIPHY y la
+  numeración 14-17 es una suposición.
 - **Moderación**: no hay filtro de fotos ni de mensajes ofensivos, ni control de reportes duplicados.

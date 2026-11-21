@@ -1,0 +1,53 @@
+.aviso {
+  display: block;
+  margin: 12px 16px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: var(--ion-color-warning-tint, #fff3cd);
+  font-size: 0.85rem;
+}
+
+.sugerencias {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 12px 16px 0;
+}
+
+.total {
+  margin: 12px 16px 4px;
+  color: var(--ion-color-medium-shade);
+  font-size: 0.85rem;
+}
+
+.grilla {
+  columns: 2;
+  column-gap: 8px;
+  padding: 8px 16px;
+}
+
+.gif {
+  display: block;
+  margin-bottom: 8px;
+  break-inside: avoid;
+
+  img {
+    display: block;
+    width: 100%;
+    border-radius: 10px;
+    background: var(--ion-color-light);
+  }
+}
+
+.centro {
+  display: grid;
+  place-items: center;
+  padding: 32px;
+}
+
+.creditos {
+  text-align: center;
+  font-size: 0.75rem;
+  color: var(--ion-color-medium);
+  padding-bottom: 16px;
+}

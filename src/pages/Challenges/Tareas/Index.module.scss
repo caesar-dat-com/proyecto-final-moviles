@@ -1,0 +1,70 @@
+.cabecera {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+
+  > div {
+    flex: 1;
+  }
+
+  strong {
+    display: block;
+  }
+}
+
+.avatar {
+  width: 56px;
+  height: 56px;
+  display: grid;
+  place-items: center;
+  background: var(--ion-color-primary);
+  color: #fff;
+  font-weight: 700;
+}
+
+.sub {
+  display: block;
+  font-size: 0.8rem;
+}
+
+.vivo {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.75rem;
+  color: var(--ion-color-success);
+}
+
+.nueva {
+  margin: 0 16px;
+  border-radius: 12px;
+  --background: var(--ion-color-light);
+}
+
+.filtros {
+  margin: 12px 16px 0;
+  width: calc(100% - 32px);
+}
+
+.hecha {
+  text-decoration: line-through;
+  color: var(--ion-color-medium);
+}
+
+.centro {
+  display: grid;
+  place-items: center;
+  padding: 32px;
+}
+
+.vacio {
+  text-align: center;
+  color: var(--ion-color-medium);
+  padding: 24px;
+}
+
+.error {
+  display: block;
+  margin: 12px 16px;
+}

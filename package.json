@@ -10,13 +10,16 @@
     "preview": "vite preview",
     "capturas": "node scripts/capturas.mjs http://localhost:5173/ capturas scripts/guion-demo.json",
     "prueba:realtime": "node scripts/prueba-realtime.mjs http://localhost:5173/",
-    "prueba:formato": "node scripts/prueba-formato.mjs http://localhost:5173/"
+    "prueba:formato": "node scripts/prueba-formato.mjs http://localhost:5173/",
+    "prueba:rutas": "node scripts/prueba-rutas.mjs http://localhost:5173/"
   },
   "dependencies": {
     "@capacitor/camera": "^8.2.6",
     "@capacitor/core": "^8.6.2",
+    "@capacitor/device": "^8.0.3",
     "@capacitor/geolocation": "^8.2.5",
     "@capacitor/haptics": "^8.0.2",
+    "@capacitor/motion": "^8.0.1",
     "@capacitor/network": "^8.0.1",
     "@ionic/react": "^9.0.13",
     "@ionic/react-router": "^9.0.13",

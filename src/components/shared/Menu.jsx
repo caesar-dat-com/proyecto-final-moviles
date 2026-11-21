@@ -5,7 +5,7 @@ import {
 } from '@ionic/react';
 import { useLocation } from 'react-router-dom';
 import {
-  chatbubblesOutline, gridOutline, homeOutline, logOutOutline, mapOutline, personOutline, megaphoneOutline,
+  chatbubblesOutline, flaskOutline, gridOutline, homeOutline, logOutOutline, mapOutline, personOutline, megaphoneOutline,
 } from 'ionicons/icons';
 import BRAND from '../../helpers/brand';
 import { iniciales } from '../../helpers/utils';
@@ -22,6 +22,7 @@ const Menu = () => {
     { url: '/app/reportes', texto: BRAND.entidades.request.plural, icono: megaphoneOutline },
     { url: '/app/chat', texto: 'Chat', icono: chatbubblesOutline },
     { url: '/app/perfil', texto: 'Mi perfil', icono: personOutline },
+    { url: '/app/challenges', texto: 'Challenges 14-17', icono: flaskOutline },
   ];
 
   return (

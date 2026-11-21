@@ -89,7 +89,7 @@ Es la que se usó el 21-nov-2026 (el usuario de pruebas no tenía acceso a Docke
 Escucha solo en un socket Unix, sin TCP.
 
 ```bash
-cd /srv/mark02/moviles-supabase
+cd ..   # carpeta de trabajo FUERA del repositorio; en estos comandos «app/» es este repositorio
 python3 -m venv .pgtest/venv
 .pgtest/venv/bin/pip install --no-cache-dir pgserver psycopg2-binary
 BIN=$(ls -d .pgtest/venv/lib/python3*/site-packages/pgserver/pginstall/bin)

@@ -8,6 +8,7 @@ import MapPage from '../pages/Map/Index';
 import Orders from '../pages/Orders/Index';
 import Chat from '../pages/Chat/Index';
 import Profile from '../pages/Profile/Index';
+import rutasChallenges from './ChallengeRoutes';
 
 const UserRoutes = () => (
   <IonTabs>
@@ -18,6 +19,7 @@ const UserRoutes = () => (
       <Route path="chat" element={<Chat />} />
       <Route path="chat/:sala" element={<Chat />} />
       <Route path="perfil" element={<Profile />} />
+      {rutasChallenges()}
       <Route path="*" element={<Navigate to="/app/inicio" replace />} />
     </IonRouterOutlet>
 
