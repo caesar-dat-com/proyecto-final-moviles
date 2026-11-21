@@ -41,7 +41,10 @@ export const formatearDireccion = (datos) => {
   const a = datos?.address || {};
   const via = [a.road || a.pedestrian || a.footway || a.path, a.house_number && `#${a.house_number}`].filter(Boolean).join(' ');
   const barrio = a.neighbourhood || a.suburb || a.quarter || a.city_district;
-  const ciudad = a.city || a.town || a.village || a.county;
+  const ciudad = (a.city || a.town || a.village || a.county || '')
+    // Nominatim devuelve "Cali ciudad" en el campo county; en direcciones se lee mal
+    .replace(/\s+ciudad$/i, '')
+    .trim();
   const partes = [via, barrio, ciudad].filter(Boolean);
   if (partes.length) return partes.join(', ');
   return datos?.display_name ? datos.display_name.split(',').slice(0, 3).join(',').trim() : null;
