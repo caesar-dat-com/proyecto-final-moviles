@@ -253,3 +253,21 @@ create policy "eliminar mis archivos" on storage.objects
 -- Para volver funcionario (admin) a un usuario (después de que se registre):
 --   update public.profiles set rol = 'admin' where email = 'funcionario@demo.local';
 -- ============================================================
+
+-- ---------------------------------------------------------------------------
+-- Permisos de los roles de la API (anon / authenticated).
+-- En un proyecto nuevo de Supabase las tablas creadas por psql no heredan los
+-- GRANT por defecto, y PostgREST responde "permission denied". Las politicas
+-- RLS de arriba siguen siendo las que deciden que fila ve cada quien.
+-- ---------------------------------------------------------------------------
+grant usage on schema public to anon, authenticated;
+grant select on public.places to anon, authenticated;
+grant select, insert, update on public.profiles to anon, authenticated;
+grant select, insert, update on public.requests to anon, authenticated;
+grant select, insert on public.messages to anon, authenticated;
+grant usage, select on all sequences in schema public to anon, authenticated;
+-- Realtime en la nube necesita la fila completa para filtrar por columnas que
+-- no son la clave primaria (por ejemplo filter: room=eq.request-5).
+alter table public.messages replica identity full;
+alter table public.requests replica identity full;
+notify pgrst, 'reload schema';
