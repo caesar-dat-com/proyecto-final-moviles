@@ -9,7 +9,8 @@
     "lint": "oxlint",
     "preview": "vite preview",
     "capturas": "node scripts/capturas.mjs http://localhost:5173/ capturas scripts/guion-demo.json",
-    "prueba:realtime": "node scripts/prueba-realtime.mjs http://localhost:5173/"
+    "prueba:realtime": "node scripts/prueba-realtime.mjs http://localhost:5173/",
+    "prueba:formato": "node scripts/prueba-formato.mjs http://localhost:5173/"
   },
   "dependencies": {
     "@capacitor/camera": "^8.2.6",

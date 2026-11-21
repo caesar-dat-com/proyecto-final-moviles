@@ -2,9 +2,10 @@
 // Uso: node scripts/capturas.mjs <url> <dirSalida> <guion.json>
 // Pasos del guion: {"goto":"/ruta"} {"clickTexto":"..."} {"click":"selector"}
 //   {"escribir":["selector","texto"]} {"geo":[lat,lng]} {"shot":"nombre"} {"wait":ms}
-//   {"limpiarStorage":true}
+//   {"limpiarStorage":true} {"subirFoto":["selector","ruta/imagen.jpg"]} {"esperarTexto":"texto"}
 // Los selectores admiten ">>>" para atravesar Shadow DOM (p. ej. ion-input[data-test="email"] >>> input).
 import fs from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 import puppeteer from 'puppeteer-core';
 
@@ -37,13 +38,18 @@ const buscarVisible = async (pagina, selector, timeout = 8000) => {
 
 const errores = [];
 let fallo = false;
+let pagina;
 try {
-  const pagina = await navegador.newPage();
+  // Contexto aislado (tipo incógnito): con el perfil por defecto, tras iniciar sesión Chrome
+  // muestra la burbuja del gestor de contraseñas y deja de entregar los clics a la página.
+  const contexto = await navegador.createBrowserContext();
+  pagina = await contexto.newPage();
   await pagina.setViewport({ width: 390, height: 844, deviceScaleFactor: 2, isMobile: true, hasTouch: true });
   pagina.on('console', (m) => m.type() === 'error' && errores.push(m.text()));
   pagina.on('pageerror', (e) => errores.push(`pageerror: ${e.message}`));
-  await navegador.defaultBrowserContext().overridePermissions(new URL(base).origin, ['geolocation']);
-  await pagina.setGeolocation({ latitude: 3.3536, longitude: -76.5226, accuracy: 20 });
+  await contexto.overridePermissions(new URL(base).origin, ['geolocation']);
+  // Ubicación simulada por defecto: barrio San Antonio, Cali (se cambia con el paso "geo")
+  await pagina.setGeolocation({ latitude: 3.447, longitude: -76.541, accuracy: 20 });
   await pagina.goto(base, { waitUntil: 'networkidle2' });
 
   let n = 0;
@@ -76,6 +82,16 @@ try {
         await el.type(valor[1], { delay: 15 });
         break;
       }
+      case 'subirFoto': {
+        // Click en el botón que abre el selector de archivos y le entrega la imagen
+        const el = await buscarVisible(pagina, valor[0]);
+        const [selector] = await Promise.all([pagina.waitForFileChooser({ timeout: 8000 }), el.click()]);
+        await selector.accept([path.resolve(valor[1])]);
+        break;
+      }
+      case 'esperarTexto':
+        await pagina.waitForFunction((t) => document.body.innerText.includes(t), { timeout: 15000, polling: 250 }, valor);
+        break;
       case 'wait':
         await new Promise((r) => setTimeout(r, valor));
         break;
@@ -94,6 +110,10 @@ try {
 } catch (e) {
   fallo = true;
   console.error('FALLO:', e.message);
+  // Captura de diagnóstico fuera de la carpeta de capturas
+  const diag = path.join(os.tmpdir(), 'capturas-fallo.png');
+  await pagina?.screenshot({ path: diag }).catch(() => {});
+  console.error('Captura de diagnóstico:', diag);
 } finally {
   await navegador.close();
 }
