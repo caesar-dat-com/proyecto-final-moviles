@@ -1,0 +1,209 @@
+RESET
+DELETE 0
+DELETE 0
+DELETE 0
+DELETE 0
+INSERT 0 3
+UPDATE 1
+== perfiles creados por el trigger crear_perfil:
+       nombre       |         email          |  rol  
+--------------------+------------------------+-------
+ Ana Ciudadana      | ana@demo.local         | user
+ Beto Ciudadano     | beto@demo.local        | user
+ Andrés Funcionario | funcionario@demo.local | admin
+(3 rows)
+
+INSERT 0 2
+INSERT 0 2
+INSERT 0 1
+
+######## T1 SELECT requests como ana
+SET
+ sesion_ana 
+------------
+ t
+(1 row)
+
+               uid_ana                
+--------------------------------------
+ 11111111-1111-1111-1111-111111111111
+(1 row)
+
+ id | cliente_nombre |          detalle          | estado 
+----+----------------+---------------------------+--------
+  1 | Ana Ciudadana  | Poste apagado (de ana)    | nuevo
+  2 | Beto Ciudadano | Hueco en la 5ta (de beto) | nuevo
+(2 rows)
+
+######## T2a INSERT request a nombre propio (ana)
+ id | es_mio | estado 
+----+--------+--------
+  3 | t      | nuevo
+(1 row)
+
+INSERT 0 1
+######## T2b INSERT request sin user_id (default auth.uid())
+ id | es_mio 
+----+--------
+  4 | t
+(1 row)
+
+INSERT 0 1
+######## T2c INSERT request a nombre de beto (debe fallar)
+psql:app/supabase/pruebas-locales/rls.sql:51: ERROR:  new row violates row-level security policy for table "requests"
+######## T2d INSERT request propio pero ya en estado resuelto (debe fallar)
+psql:app/supabase/pruebas-locales/rls.sql:54: ERROR:  new row violates row-level security policy for table "requests"
+######## T3a ana avanza el estado de SU reporte nuevo -> en_revision (debe fallar)
+psql:app/supabase/pruebas-locales/rls.sql:57: ERROR:  new row violates row-level security policy for table "requests"
+######## T3b ana cambia el estado del reporte de beto (debe afectar 0 filas)
+ id | estado 
+----+--------
+(0 rows)
+
+UPDATE 0
+######## T3c ana se reasigna a sí misma el reporte de beto (debe afectar 0 filas)
+ id 
+----
+(0 rows)
+
+UPDATE 0
+######## T3d ana retira (descartado) SU reporte nuevo (permitido por diseño: botón «Retirar»)
+ id |   estado   
+----+------------
+  4 | descartado
+(1 row)
+
+UPDATE 1
+######## T3e ana reabre su reporte descartado -> nuevo (debe afectar 0 filas)
+ id | estado 
+----+--------
+(0 rows)
+
+UPDATE 0
+######## T3f ana se sube a admin en profiles (debe fallar)
+psql:app/supabase/pruebas-locales/rls.sql:67: ERROR:  new row violates row-level security policy for table "profiles"
+######## T3g ana cambia su nombre en profiles (permitido)
+ nombre | rol  
+--------+------
+ Ana C. | user
+(1 row)
+
+UPDATE 1
+######## T3h ana crea una dependencia (places) (debe fallar)
+psql:app/supabase/pruebas-locales/rls.sql:71: ERROR:  new row violates row-level security policy for table "places"
+######## T4a mensajes que ve ana por sala
+   room    |       autor        |                  texto                  
+-----------+--------------------+-----------------------------------------
+ general   | Andrés Funcionario | Bienvenidos
+ request-1 | Ana Ciudadana      | mensaje en el reporte de Ana Ciudadana
+ request-2 | Beto Ciudadano     | mensaje en el reporte de Beto Ciudadano
+(3 rows)
+
+######## T4b ana escribe en la sala de SU reporte
+   room    |       texto       
+-----------+-------------------
+ request-1 | ana en su reporte
+(1 row)
+
+INSERT 0 1
+######## T4c ana escribe en la sala del reporte de beto
+   room    |        texto         
+-----------+----------------------
+ request-2 | ana en reporte ajeno
+(1 row)
+
+INSERT 0 1
+######## T4d ana escribe suplantando a beto (debe fallar)
+psql:app/supabase/pruebas-locales/rls.sql:84: ERROR:  new row violates row-level security policy for table "messages"
+######## T4e ana escribe en una sala inexistente (debe fallar)
+psql:app/supabase/pruebas-locales/rls.sql:86: ERROR:  new row violates row-level security policy for table "messages"
+######## T6 Storage: ana sube a su carpeta / a la de beto
+psql:app/supabase/pruebas-locales/rls.sql:89: ERROR:  new row violates row-level security policy for table "objects"
+psql:app/supabase/pruebas-locales/rls.sql:90: ERROR:  new row violates row-level security policy for table "objects"
+######## T3i funcionario (admin) avanza el estado del reporte de ana
+ sesion_func 
+-------------
+ t
+(1 row)
+
+ func_es_admin 
+---------------
+ t
+(1 row)
+
+ id |   estado    
+----+-------------
+  1 | en_revision
+(1 row)
+
+UPDATE 1
+ id |  estado  
+----+----------
+  2 | resuelto
+(1 row)
+
+UPDATE 1
+######## T3j funcionario crea una dependencia
+        nombre         
+-----------------------
+ Dependencia de prueba
+(1 row)
+
+INSERT 0 1
+######## T1b SELECT requests como beto
+ sesion_beto 
+-------------
+ t
+(1 row)
+
+ cliente_nombre |                detalle                |   estado    
+----------------+---------------------------------------+-------------
+ Ana Ciudadana  | Poste apagado (de ana)                | en_revision
+ Beto Ciudadano | Hueco en la 5ta (de beto)             | resuelto
+ Ana Ciudadana  | Basura acumulada (ana, insert propio) | nuevo
+ Ana Ciudadana  | Sin user_id explícito                 | descartado
+(4 rows)
+
+######## T4f mensajes que ve beto
+   room    |       autor        |                  texto                  
+-----------+--------------------+-----------------------------------------
+ general   | Andrés Funcionario | Bienvenidos
+ request-1 | Ana Ciudadana      | mensaje en el reporte de Ana Ciudadana
+ request-1 | Ana C.             | ana en su reporte
+ request-2 | Beto Ciudadano     | mensaje en el reporte de Beto Ciudadano
+ request-2 | Ana C.             | ana en reporte ajeno
+(5 rows)
+
+######## T5 anónimo (rol anon, sin JWT)
+RESET
+ sin_jwt 
+---------
+ t
+(1 row)
+
+SET
+ uid_anon 
+----------
+ 
+(1 row)
+
+  tabla   | count 
+----------+-------
+ profiles |     0
+ places   |     0
+ requests |     0
+ messages |     0
+(4 rows)
+
+######## T5b anónimo intenta insertar
+psql:app/supabase/pruebas-locales/rls.sql:119: ERROR:  new row violates row-level security policy for table "requests"
+psql:app/supabase/pruebas-locales/rls.sql:120: ERROR:  new row violates row-level security policy for table "messages"
+RESET
+######## T7 borrar un usuario de auth.users (como hace el panel de Supabase)
+psql:app/supabase/pruebas-locales/rls.sql:124: ERROR:  update or delete on table "users" violates foreign key constraint "requests_user_id_fkey" on table "requests"
+DETAIL:  Key (id)=(22222222-2222-2222-2222-222222222222) is still referenced from table "requests".
+ perfiles_beto 
+---------------
+             1
+(1 row)
+

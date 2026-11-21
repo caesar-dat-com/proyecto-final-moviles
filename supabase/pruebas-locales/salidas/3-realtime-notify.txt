@@ -1,0 +1,6 @@
+INSERT como ana (RLS activa) en sala request-8: id=21
+oyente request-8: RECIBIDO canal=messages:room=eq.request-8 id=21 autor='Ana C.' texto='mensaje para el oyente'
+oyente request-999999: nada recibido en 2 s
+INSERT como ana (RLS activa) en sala request-1: id=12
+oyente request-1: RECIBIDO canal=messages:room=eq.request-1 id=12 autor='Ana C.' texto='mensaje para el oyente'
+oyente request-999999: nada recibido en 2 s

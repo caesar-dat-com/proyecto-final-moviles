@@ -107,6 +107,8 @@ npm run build             # compila a dist/
 
 ### Conectar Supabase (cuando exista el proyecto)
 
+Guía detallada y pruebas locales del SQL (RLS, Realtime) en [`supabase/README.md`](./supabase/README.md).
+
 1. Crear el proyecto en supabase.com.
 2. SQL Editor → ejecutar `supabase/schema.sql` y luego `supabase/seed.sql` (6 dependencias).
 3. Authentication → Providers → Email activo (en desarrollo se puede desactivar «Confirm email»).
