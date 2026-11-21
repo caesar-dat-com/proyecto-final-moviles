@@ -1,200 +1,246 @@
-# Documento final — Alcance del sistema y tecnologías utilizadas
+# Documento final — ReportaCali: alcance, arquitectura y tecnologías
 
-**Proyecto:** ServiCasa — app móvil de servicios a domicilio
+**Proyecto:** ReportaCali — reportes urbanos geolocalizados («Reporta lo que ves, arregla tu barrio»)
 **Curso:** Desarrollo de Software para Plataformas Móviles (UAO, 14780)
-**Autor:** César Armando Reyes (entrega individual)
+**Integrante:** César Armando Reyes (entrega individual, rama `proyecto-final-cesar-reyes`)
+**Prototipo:** PENDIENTE (prototipo Lovable)
 **Fecha:** noviembre de 2026
 
 ---
 
 ## 1. Propósito
 
-Desarrollé una aplicación móvil híbrida en Ionic React que permite a una persona encontrar
-servicios para su hogar (plomería, electricidad, aseo, cerrajería, jardinería), solicitarlos
-desde el teléfono indicando su ubicación y una foto del problema, seguir el estado de la
-solicitud y conversar en tiempo real con quien la atiende. Del otro lado, un administrador
-gestiona el catálogo de servicios, ve todas las solicitudes, las hace avanzar de estado y
-responde los chats.
+Desarrollé una aplicación móvil híbrida en Ionic React para que cualquier ciudadano de Cali pueda
+reportar un problema de su barrio —un hueco, una luminaria apagada, basuras acumuladas, una fuga de
+acueducto, un semáforo fuera de servicio o una zona insegura— en pocos segundos, con **foto y
+ubicación GPS**. El reporte queda en un mapa público con su dirección, se asigna automáticamente a la
+**dependencia responsable** según su categoría y tiene un **chat en tiempo real** donde los vecinos y el
+funcionario hablan sobre el caso. Un **funcionario** (rol administrador) lo mueve de estado hasta
+resolverlo.
 
-Elegí este dominio porque obliga a usar, de forma natural, todos los temas del curso: React y
-sus custom hooks, sensores del dispositivo, memoria local, base de datos, autenticación real,
-comunicación en tiempo real y mapas.
+Elegí este tema porque usa de forma natural todos los temas del curso: la cámara y el GPS son
+indispensables (un reporte sin ubicación no sirve), el mapa es la vista principal, el chat y los
+cambios de estado tienen que llegar en vivo, y hay dos roles con permisos distintos sobre la misma base
+de datos.
 
-Desde el principio diseñé la app para que se pueda **re-tematizar** sin tocar la lógica: el
-nombre, el eslogan, los colores, las categorías, los estados y los nombres visibles de las
-entidades viven en `src/helpers/brand.js`, y las tablas de la base de datos tienen nombres
-neutros (`profiles`, `places`, `requests`, `messages`). Si mañana el tema cambia a, por
-ejemplo, reservas de canchas o domicilios de comida, edito ese archivo y los datos de ejemplo.
+## 2. Alcance del sistema
 
-## 2. Alcance
+### 2.1 Roles
 
-### 2.1 Lo que el sistema hace
+| Rol | Tabla / valor | Qué puede hacer |
+|---|---|---|
+| Ciudadano | `profiles.rol = 'user'` | Registrarse, crear reportes, ver todos los reportes del mapa, filtrar los suyos, retirar un reporte suyo mientras está «Nuevo», chatear en cualquier reporte y en la sala Comunidad, editar su perfil. |
+| Funcionario | `profiles.rol = 'admin'` | Todo lo anterior salvo crear reportes desde Inicio; además ve el panel con métricas, avanza el estado de cualquier reporte o lo descarta, y administra las dependencias (crear, editar, eliminar). |
+
+### 2.2 Funcionalidades
 
 | Módulo | Funcionalidad |
 |---|---|
-| Autenticación | Registro con nombre, correo y contraseña; inicio y cierre de sesión; la sesión persiste al recargar. Al registrarse se crea automáticamente el perfil del usuario. |
-| Roles | Dos roles: `user` y `admin`. Según el rol, `AppRoutes` carga `UserRoutes` o `AdminRoutes`. Sin sesión solo se ven login y registro. |
-| Catálogo (Inicio) | Lista de servicios en tarjetas (`CardItem`), búsqueda por texto, filtro por categoría (se recuerda en memoria local) y orden por distancia a mi ubicación. |
-| Solicitudes | Desde un servicio abro un `IonModal`, describo lo que necesito, adjunto mi ubicación GPS y opcionalmente una foto. Se guarda en la tabla `requests` y vibra al confirmar. |
-| Seguimiento | Pestaña de solicitudes con vistas "Activas" e "Historial". El usuario puede cancelar mientras está pendiente; el admin la avanza: pendiente → aceptada → en camino → completada. La lista se actualiza en vivo. |
-| Chat | Sala general "Comunidad" y una sala por cada solicitud (`request-<id>`). Burbujas propias y ajenas, hora de envío y desplazamiento automático al último mensaje. |
-| Mapa | Mapa Leaflet con los servicios como marcadores, mi ubicación con su círculo de precisión, botón para centrarme, seguimiento en vivo (`watchPosition`) y los tres servicios más cercanos. |
-| Perfil | Cambio de nombre, foto de perfil con la cámara/galería, estado de la red, ubicación actual y modo de backend. |
-| Panel admin | Métricas en vivo (servicios, pendientes, en curso, completadas) y CRUD completo de servicios con formulario en `IonModal`, que permite tomar las coordenadas de mi GPS. |
-| Red | Indicador de conexión en la barra superior; sin red se deshabilitan las acciones que escriben en el backend (enviar mensajes, crear o cambiar solicitudes). |
+| Autenticación | Registro con nombre, correo y contraseña; inicio y cierre de sesión; la sesión persiste al recargar. Al registrarse se crea el perfil con un trigger. Según el rol, `AppRoutes` carga `UserRoutes` o `AdminRoutes`. |
+| Inicio (ciudadano) | Botón «Reportar un problema», número de reportes activos propios y el «catálogo» de **dependencias responsables** en tarjetas (`CardItem`), con búsqueda, filtro por categoría (recordado en memoria local), distancia a mi ubicación y **tiempo de respuesta estimado** («5 días hábiles»). Tocar una dependencia abre el formulario con su categoría elegida. |
+| Crear reporte | `IonModal` que pide **categoría**, **descripción**, **ubicación GPS** (obligatorias) y **foto** (cámara o galería, muy recomendada). Al tomar la ubicación muestra la dirección (Nominatim). Muestra qué dependencia lo atiende y en cuánto tiempo. Vibra al enviar. Sin red no deja enviar. |
+| Reportes | Lista en vivo con vistas «Activos», «Míos» (ciudadano) y «Cerrados». Cada tarjeta muestra categoría, estado, foto, autor, **dirección obtenida por geocoding inverso**, dependencia asignada y botón de chat. El funcionario avanza `Nuevo → En revisión → Asignado → Resuelto` o descarta. |
+| Mapa | Leaflet con los reportes activos como marcadores con el icono y color de su categoría, las dependencias como marcador 🏛️, mi ubicación con círculo de precisión, botón para centrarme, seguimiento en vivo (`watchPosition`) y los tres reportes activos más cercanos con su dirección. El popup de cada reporte muestra estado, dirección, descripción y un botón para abrir su chat. |
+| Chat | Sala «Comunidad» y una sala por reporte (`request-<id>`) abierta a vecinos y funcionarios. Burbujas propias y ajenas, hora y desplazamiento automático. |
+| Perfil | Cambio de nombre, foto de perfil con la cámara/galería, rol (Ciudadano/Funcionario), estado de la red, ubicación actual y modo de backend. |
+| Panel del funcionario | Métricas en vivo (nuevos, en proceso, resueltos, dependencias), reportes abiertos por categoría y CRUD de dependencias con formulario en `IonModal` (puede tomar las coordenadas de su GPS). |
+| Red | Indicador de conexión en la barra superior; sin red se deshabilitan las acciones que escriben (enviar mensajes, crear o cambiar reportes). |
 
-### 2.2 Lo que queda fuera del alcance
+### 2.3 Fuera del alcance
 
-- Pagos en línea y facturación.
-- Notificaciones push (requieren Firebase Cloud Messaging y un dispositivo físico).
-- Calificaciones y reseñas de los servicios.
-- Asignación automática de técnicos; en esta versión el administrador gestiona todo.
+- Integración con los sistemas oficiales de la Alcaldía de Cali: ReportaCali **no** es un canal
+  oficial; las dependencias son datos de ejemplo.
+- Notificaciones push cuando cambia el estado de un reporte.
+- Detección de reportes duplicados, votos de vecinos («a mí también me afecta») y moderación de fotos.
+- Asignación del reporte a un funcionario específico (hoy cualquier funcionario gestiona todos).
 
 ## 3. Arquitectura
 
 ### 3.1 Vista general
 
 ```
-┌──────────────── App móvil (Ionic React + Capacitor) ────────────────┐
-│  pages/  →  components/  →  hooks/ (una capacidad por hook)          │
-│                                 │                                    │
-│                       lib/supabase.js (cliente único)                │
-│                 haySupabase ? Supabase : helpers/localDb.js          │
-└─────────────────────────────────┼────────────────────────────────────┘
-                                  │
-        ┌─────────────────────────┴──────────────────────────┐
-        │ Supabase: Auth · PostgreSQL + RLS · Realtime · Storage │
-        └────────────────────────────────────────────────────────┘
+┌──────────────────── App móvil (Ionic React + Capacitor) ────────────────────┐
+│  pages/  →  components/  →  hooks/ (una capacidad por hook)                  │
+│                                   │                       │                   │
+│                     lib/supabase.js (cliente único)   helpers/geocoding.js    │
+│               haySupabase ? Supabase : helpers/localDb.js         │           │
+└───────────────────────────────────┼───────────────────────────────┼──────────┘
+                                    │                               │
+     ┌──────────────────────────────┴─────────────────┐   ┌─────────┴──────────────┐
+     │ Supabase: Auth · PostgreSQL + RLS · Realtime ·  │   │ Nominatim (OSM)         │
+     │ Storage                                         │   │ geocoding inverso       │
+     └─────────────────────────────────────────────────┘   └────────────────────────┘
 ```
 
-Seguí el estilo de las clases: **toda la lógica de acceso a datos y a sensores está en custom
-hooks** y las páginas solo los consumen. Esto me permitió cambiar el origen de los datos sin
-tocar ninguna pantalla.
+Seguí el estilo de las clases: **todo el acceso a datos, sensores y APIs está en custom hooks** y las
+páginas solo los consumen. Por eso pude cambiar el tema de la app (empezó como una app genérica) sin
+tocar la arquitectura: el nombre, los colores, las categorías, los estados, los roles y los nombres
+visibles de las entidades viven en `src/helpers/brand.js`, y las tablas conservan nombres neutros.
 
-### 3.2 Estructura de carpetas
+### 3.2 Estructura de carpetas (la que pide la rúbrica)
 
-Respeté la estructura que pide la rúbrica:
-
-- `helpers/`: funciones generales (`utils.js`: formato de fechas y precios, distancia Haversine,
-  validaciones, aplicación del tema), `brand.js`, `seeds.js`, `localDb.js` y `archivos.js`.
+- `helpers/`: `utils.js` (funciones generales: fechas, `formatearPrecio`, distancia Haversine, estados,
+  validaciones, aplicación del tema), `brand.js`, `geocoding.js`, `seeds.js`, `localDb.js`, `archivos.js`.
 - `context/`: `AuthContext.jsx`.
-- `pages/`: una carpeta por página con `Index.jsx` e `Index.module.scss` (Login, Register, Home,
-  Map, Orders, Chat, Profile, Admin).
+- `pages/`: una carpeta por página con `Index.jsx` e `Index.module.scss` (Login, Register, Home, Map,
+  Orders, Chat, Profile, Admin).
 - `components/`: `CardItem/CardItem.jsx` + `CardItem.module.scss`, `MapView`, `ChatBubble`,
-  `RequestModal`, `NetworkBadge`, y `components/shared/` con `Menu.jsx` + `Menu.module.scss` y
-  `Header.jsx`.
-- `hooks/`: los custom hooks descritos abajo.
+  `RequestModal`, `NetworkBadge`, `Direccion`, y `components/shared/` con `Menu.jsx` +
+  `Menu.module.scss` y `Header.jsx`.
+- `hooks/`: los custom hooks de la tabla siguiente.
 - `routes/`: `AppRoutes.jsx`, `UserRoutes.jsx` y `AdminRoutes.jsx`.
 
 ### 3.3 Custom hooks
 
 | Hook | Responsabilidad |
 |---|---|
-| `useAuth` | Registro, login, logout, sesión y perfil. Se instancia **una sola vez** en `App.jsx` y se comparte por `AuthContext`; así evito el error del Parcial 1, donde dos instancias sueltas tenían sesiones distintas. |
-| `useCollection(tabla, { filtros, orden, realtime })` | CRUD genérico (`getAll`, `add`, `update`, `remove`) con filtros en el formato de la Clase 07: `[["campo", "==", valor]]`. Con `realtime: true` se suscribe a los cambios de la tabla. |
-| `useRealtimeChat(sala, autor)` | Carga el historial de una sala y escucha los mensajes nuevos; `enviar(texto)` inserta y evita duplicados. |
-| `useGeolocation({ seguir, auto })` | `getCurrentPosition` y `watchPosition` de Capacitor, con limpieza del seguimiento al desmontar. |
-| `useCamera` | `Camera.getPhoto` con resultado en dataUrl (cámara o galería). |
+| `useAuth` | Registro, login, logout, sesión y perfil. Se instancia una sola vez en `App.jsx` y se comparte por `AuthContext`. |
+| `useCollection(tabla, { filtros, orden, realtime })` | CRUD genérico con filtros estilo Clase 07 (`[["campo", "==", valor]]`); con `realtime: true` se suscribe a los cambios de la tabla. |
+| `useRealtimeChat(sala, autor)` | Historial de una sala y mensajes nuevos en vivo; `enviar(texto)`. |
+| `useGeolocation({ seguir, auto })` | `getCurrentPosition` y `watchPosition` de Capacitor, con limpieza al desmontar. |
+| `useCamera` | `Camera.getPhoto` en dataUrl. En el dispositivo pregunta cámara o galería; en web usa el selector de archivos. |
+| `useDireccion(lat, lng)` | Dirección legible de unas coordenadas con Nominatim; si falla devuelve las coordenadas. |
 | `useNetwork` | `Network.getStatus` y el evento `networkStatusChange`. |
-| `useLocalStorage(clave, inicial)` | Estado de React persistido en la memoria local y sincronizado entre pestañas. |
+| `useLocalStorage(clave, inicial)` | Estado de React persistido en la memoria local. |
 | `useHaptics` | Impacto, notificación de éxito y vibración. |
 
 ### 3.4 Rutas protegidas
 
-`AppRoutes` lee el contexto de autenticación. Mientras carga la sesión y el perfil muestra un
-indicador, para no enseñar por un instante las rutas del rol equivocado. Sin sesión monta un
-`IonRouterOutlet` con `/login` y `/registro` y redirige todo lo demás a `/login`. Con sesión
-monta el `IonMenu` y un outlet con `/app/*`, que resuelve a `AdminRoutes` o `UserRoutes` según
-`perfil.rol`. Cada uno es un `IonTabs` con su propia barra de pestañas.
+`AppRoutes` lee el contexto de autenticación. Mientras carga la sesión muestra un indicador; sin
+sesión solo expone `/login` y `/registro`; con sesión monta el `IonMenu` y `/app/*`, que resuelve a
+`AdminRoutes` (pestañas Panel, Mapa, Reportes, Chat, Perfil) o `UserRoutes` (Inicio, Mapa, Reportes,
+Chat, Perfil) según `perfil.rol`.
 
 ### 3.5 Backend con respaldo local
 
-`src/lib/supabase.js` crea el cliente solo si existen `VITE_SUPABASE_URL` y `VITE_SUPABASE_KEY`
-(`haySupabase = Boolean(url && key)`). Cada hook tiene dos ramas con **la misma interfaz**:
+`src/lib/supabase.js` crea el cliente solo si existen `VITE_SUPABASE_URL` y `VITE_SUPABASE_KEY`.
+Cada hook tiene dos ramas con **la misma interfaz**:
 
-- **Supabase:** Auth para la sesión, PostgREST para el CRUD, `postgres_changes` de Realtime para
-  el chat y las listas, y Storage para las fotos.
-- **Local:** `helpers/localDb.js` guarda cada tabla en `localStorage` y emite cada inserción,
-  actualización o borrado por `BroadcastChannel` y a los oyentes de la misma pestaña. Así el
-  chat y las listas se actualizan en vivo entre pestañas sin recargar. Las contraseñas del modo
-  local se guardan con hash SHA-256 (solo para no tenerlas en texto plano; no pretende ser
-  seguridad real).
+- **Supabase:** Auth para la sesión, PostgREST para el CRUD, `postgres_changes` de Realtime para el
+  chat, las listas y el mapa, y Storage para las fotos.
+- **Local:** `helpers/localDb.js` guarda cada tabla en `localStorage` y emite cada cambio por
+  `BroadcastChannel`, así que el chat, las listas y el mapa se actualizan en vivo entre pestañas.
+  Las contraseñas locales se guardan con hash SHA-256 solo para no tenerlas en texto plano.
 
-Tomé esta decisión porque al momento de construir la app no tenía un proyecto Supabase creado.
-Así la app se puede revisar completa sin llaves, el código del SDK queda listo para quien las
-tenga, y en la interfaz se indica claramente en qué modo está corriendo.
+La interfaz declara siempre el modo en que corre (login, menú y perfil).
+
+### 3.6 API externa: geocoding inverso con Nominatim
+
+`helpers/geocoding.js` llama a `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=..&lon=..`
+(sin llave) y arma una dirección corta con la vía, el número, el barrio y la ciudad. Para respetar la
+política de uso de Nominatim: envío un `User-Agent` propio, guardo cada resultado en `localStorage`
+(clave por coordenadas con 5 decimales), espero al menos 1,1 s entre peticiones con una cola y
+comparto las peticiones repetidas en curso. Si la petición falla, el componente `Direccion` muestra
+las coordenadas.
 
 ## 4. Modelo de datos
 
-| Tabla | Campos principales | Notas |
+| Tabla | En ReportaCali | Campos principales | Notas |
+|---|---|---|---|
+| `profiles` | Ciudadano / funcionario | `id` (uuid = `auth.users.id`), `nombre`, `email`, `rol` (`user`/`admin`), `avatar_url` | Se crea con un trigger al registrarse. |
+| `places` | Dependencia responsable | `id`, `nombre`, `descripcion`, `categoria`, `precio`, `lat`, `lng` | `precio` conserva el nombre de la columna pero guarda los **días hábiles de respuesta estimada**; `formatearPrecio` lo muestra como «3 días hábiles» según `BRAND.valor`. |
+| `requests` | Reporte | `id`, `user_id`, `cliente_nombre`, `categoria`, `detalle`, `estado`, `lat`, `lng`, `foto_url`, `place_id`, `place_nombre` | `estado` con `check`: `nuevo`, `en_revision`, `asignado`, `resuelto`, `descartado`. |
+| `messages` | Chat | `id`, `room` (`general` o `request-<id>`), `user_id`, `autor`, `texto`, `created_at` | Índice por `(room, created_at)`. |
+
+**Seguridad (RLS, Clase 09):** RLS activo en las cuatro tablas. Los reportes son legibles por cualquier
+usuario autenticado (son públicos en el mapa); cada ciudadano solo crea reportes a su nombre y en
+estado `nuevo`, y solo puede retirarlos (`descartado`) mientras siguen en `nuevo`; el funcionario
+(`es_admin()` con `security definer`) cambia el estado de cualquiera. Solo el funcionario escribe en
+`places`. Los mensajes son legibles por los autenticados y solo se puede escribir en la sala general o
+en la de un reporte que exista. Nadie puede cambiarse el rol. El bucket `avatars` solo permite escribir
+en la carpeta `<uid>/` propia. Realtime está activo para `messages`, `requests` y `places`.
+Todo está en `supabase/schema.sql`; los datos de ejemplo en `supabase/seed.sql`.
+
+## 5. Tecnologías usadas y justificación
+
+| Tecnología | Versión | Por qué la usé |
 |---|---|---|
-| `profiles` | `id` (uuid = `auth.users.id`), `nombre`, `email`, `rol`, `avatar_url` | Se crea con un trigger al registrarse. |
-| `places` | `id`, `nombre`, `descripcion`, `categoria`, `precio`, `lat`, `lng` | Puntos del mapa / catálogo. |
-| `requests` | `id`, `user_id`, `place_id`, `detalle`, `estado`, `lat`, `lng`, `foto_url` | Transacción principal; `estado` con `check`. |
-| `messages` | `id`, `room`, `user_id`, `autor`, `texto`, `created_at` | Índice por `(room, created_at)`. |
+| React | 19.3 | Base del curso; componentes, estado y custom hooks. |
+| Vite | 8.3 | Proyecto creado con `npm create vite@latest` como en clase; arranque y build rápidos. |
+| Ionic React + `@ionic/react-router` | 9.0 | Componentes móviles nativos en apariencia (`IonTabs`, `IonMenu`, `IonModal`, `IonSegment`, `IonFab`, `IonToast`…) y navegación con transiciones. |
+| React Router | 6.30 | Es la versión que exige Ionic 9 (con la 5 npm falla por dependencias). |
+| Capacitor | 8.6 | Acceso a GPS, cámara, vibración y red con la misma API en web y en Android. |
+| Supabase (`@supabase/supabase-js`) | 2.119 | Auth, PostgreSQL, Realtime y Storage en un solo servicio (ver 5.1). |
+| Leaflet + React Leaflet | 1.9 / 5.0 | Mapa visto en la Clase 10, libre y sin llave, con mosaicos de OpenStreetMap. |
+| Nominatim (OpenStreetMap) | API pública | Geocoding inverso sin llave y con la misma fuente de datos del mapa. |
+| Sass (CSS Modules) | 1.108 | Un `*.module.scss` por página y componente, como pide la rúbrica. |
+| Puppeteer-core | 25.18 | Solo desarrollo: capturas automáticas y pruebas en Chrome headless. |
 
-**Seguridad (RLS):** activé RLS en las cuatro tablas, siguiendo la Clase 09. Cada usuario ve y
-crea solo sus solicitudes; el administrador (función `es_admin()` con `security definer`) ve y
-edita todas. Solo el admin escribe en `places`. En `messages`, la sala general es para cualquier
-usuario autenticado y la sala de una solicitud solo para su dueño y el admin. Un usuario puede
-editar su perfil pero no cambiarse el rol. El bucket `avatars` solo permite escribir dentro de la
-carpeta `<uid>/` del propio usuario. Activé Realtime para `messages`, `requests` y `places`.
+**Diseño:** el color primario `#2b5bd7` sale de la diapositiva del Color Generator de Ionic
+(Diseño UI); el secundario `#14b8a6` (turquesa) y el terciario `#f59e0b` (ámbar) diferencian ubicación
+y estados intermedios. Se aplican a las variables `--ion-color-*` en tiempo de ejecución desde
+`brand.js`. Cada categoría tiene icono y color propios en el mapa.
 
-Todo está en `supabase/schema.sql`, listo para pegar en el SQL Editor.
+### 5.1 ¿Por qué Supabase y no Firebase?
 
-## 5. Tecnologías utilizadas
+La rúbrica menciona Firebase, pero usé **Supabase** por estas razones:
 
-| Tecnología | Versión | Uso |
+1. **Es el backend que vimos en la Clase 09**, con el mismo patrón de cliente único, Auth, tablas, RLS,
+   Realtime y Storage que apliqué aquí.
+2. **Los datos de ReportaCali son relacionales**: un reporte pertenece a un ciudadano y a una
+   dependencia, y los mensajes pertenecen a un reporte. PostgreSQL modela eso con llaves foráneas,
+   `check` sobre los estados e índices, mientras que en Firestore tendría que duplicar datos.
+3. **La seguridad se expresa en SQL con RLS**: reglas como «el ciudadano solo puede retirar su reporte
+   mientras está nuevo» o «solo el funcionario cambia estados» quedan en `schema.sql`, versionadas
+   junto al código.
+4. **Realtime sobre la misma base**: `postgres_changes` avisa de inserciones y actualizaciones de
+   `messages` y `requests` sin mantener una segunda base de datos para el chat.
+5. **Cubre lo mismo que Firebase pide el curso** (autenticación real, base de datos, tiempo real y
+   archivos) con plan gratuito y SDK de JavaScript.
+
+## 6. Capacidades del dispositivo usadas
+
+| Capacidad | Plugin | Dónde y para qué |
 |---|---|---|
-| React | 19 | Interfaz y custom hooks |
-| Vite | 8 | Proyecto creado con `npm create vite@latest`, servidor de desarrollo y build |
-| Ionic React / `@ionic/react-router` | 9 | Componentes móviles (`IonTabs`, `IonMenu`, `IonList`, `IonModal`, `IonToast`, `IonSegment`, `IonFab`…) y navegación |
-| React Router | 6 | Rutas (es la versión que exige Ionic 9) |
-| Capacitor | 8 | Geolocation, Camera, Haptics, Network |
-| Supabase (`@supabase/supabase-js`) | 2 | Auth, PostgreSQL, Realtime, Storage |
-| Leaflet + React Leaflet | 1.9 / 5 | Mapa con mosaicos de OpenStreetMap |
-| Sass (CSS Modules) | 1.x | Un `*.module.scss` por página y componente |
-| Puppeteer-core | 25 | Capturas y prueba automática del tiempo real (solo desarrollo) |
+| GPS (posición actual) | `@capacitor/geolocation` `getCurrentPosition` | Ubicación obligatoria del reporte, distancia a las dependencias, coordenadas de una dependencia nueva. |
+| GPS (seguimiento) | `watchPosition` / `clearWatch` | «Seguir mi ubicación en vivo» en el mapa y reportes activos más cercanos. |
+| Cámara / galería | `@capacitor/camera` `getPhoto` | Foto del reporte y foto de perfil. |
+| Vibración | `@capacitor/haptics` | Confirmación al enviar un reporte y al activar el seguimiento en el mapa. |
+| Estado de la red | `@capacitor/network` | Indicador de conexión y bloqueo de escrituras sin red. |
+| Memoria local | `localStorage` | Sesión y base del modo local, categoría elegida, caché de direcciones de Nominatim. |
 
-**Diseño:** tomé el color primario `#2b5bd7` de la diapositiva del Color Generator de Ionic y
-lo apliqué a las variables `--ion-color-*` en tiempo de ejecución desde `brand.js`, para que el
-cambio de tema también cambie los colores. Usé el modo `ios` de Ionic porque es el más cercano a
-las referencias de Refero/Mobbin que vimos en clase.
+## 7. Relación con los temas del curso
 
-## 6. Relación con los temas del curso
-
-| Tema del curso | Dónde lo apliqué |
+| Tema | Dónde lo apliqué |
 |---|---|
-| React (componentes, props, estado, efectos, contexto) | Toda la app; `AuthContext` para la sesión |
-| Custom hooks (Clases 07–11) | Ocho hooks, uno por capacidad |
-| Memoria / almacenamiento local (Clase 07) | `useLocalStorage`, sesión y base local en `localStorage` |
-| Base de datos (Clases 07 y 09) | Supabase PostgreSQL con RLS; `useCollection` con filtros estilo curso |
-| Comunicación en tiempo real (Clases 07 y 09) | Supabase Realtime / BroadcastChannel en chat, solicitudes y panel |
-| Sensores (Clase 08) | Geolocalización, cámara, vibración y red |
-| Mapas y APIs (Clases 10 y 11) | Leaflet + OpenStreetMap; distancias con Haversine |
-| Diseño UI | Paleta del Color Generator, componentes Ionic y CSS Modules |
-| Firebase | La rúbrica lo menciona; usé Supabase, que fue el backend visto en la Clase 09 y cubre lo mismo (auth, base de datos, tiempo real y archivos). |
+| React (componentes, props, estado, efectos, contexto) | Toda la app; `AuthContext` para la sesión. |
+| Custom hooks | Nueve hooks, uno por capacidad. |
+| Sensores (Clase 08) | GPS, cámara, vibración y red (sección 6). |
+| Memoria / storage (Clase 07) | `useLocalStorage`, modo local y caché de geocoding. |
+| Bases de datos y login real (Clases 07 y 09) | Supabase Auth + PostgreSQL con RLS; `useCollection`. |
+| Comunicación en tiempo real | Chat por reporte y Comunidad; listas, mapa y panel que se actualizan solos. |
+| Mapas y APIs (Clases 10 y 11) | Leaflet + OpenStreetMap; Nominatim para geocoding inverso. |
+| Diseño UI | Paleta del Color Generator, componentes Ionic, CSS Modules. |
 
-## 7. Verificación
+## 8. Verificación realizada
 
-- `npm run build` compila sin errores.
-- Con `npm run dev` recorrí la app en Chrome headless con el script `scripts/capturas.mjs`:
-  registro de un usuario nuevo, creación de una solicitud con GPS, chat en la sala de la
-  solicitud y en la general, mapa, perfil y menú; luego, como administrador, el panel, el avance
-  de estado, la respuesta en el chat y la creación de un servicio nuevo que aparece en el mapa.
-  Las capturas están en `capturas/` y no hubo errores en la consola del navegador.
-- `scripts/prueba-realtime.mjs` abre dos pestañas, envía un mensaje en una y confirma que aparece
-  en la otra sin recargar.
+- `npm run build` compila sin errores (solo el aviso de Vite por el tamaño del paquete).
+- Con `npm run dev`, `curl` a `http://localhost:5173/` responde HTTP 200.
+- `npm run capturas` recorre la app en Chrome headless y genera **16 capturas** en `capturas/`:
+  login, registro, inicio, formulario de reporte con dirección real y foto, reporte creado, lista de
+  reportes, chat del reporte, Comunidad, mapa con el popup del reporte, perfil, menú y, como
+  funcionario, panel, cambio de estado, respuesta en el chat, nueva dependencia y mapa. Sin errores en
+  la consola del navegador.
+- `npm run prueba:realtime` abre dos pestañas, envía un mensaje en una y confirma que aparece en la
+  otra sin recargar.
+- `npm run prueba:formato` confirma que `formatearPrecio` devuelve «3 días hábiles» / «1 día hábil» y
+  que con `formato: 'moneda'` sigue devolviendo «$ 60.000».
 
-## 8. Limitaciones y trabajo futuro
+## 9. Limitaciones honestas
 
-- **Supabase sin probar contra un proyecto real:** el código está completo, pero todavía no hay
-  llaves; lo verificado es el modo local. El siguiente paso es crear el proyecto, ejecutar
-  `schema.sql` y repetir las pruebas.
-- **Cámara y vibración en navegador:** la cámara abre el selector de archivos y la vibración no
-  hace nada; en el teléfono funcionan con Capacitor.
-- **Tiempo real local:** solo entre pestañas del mismo navegador; entre dispositivos se requiere
-  Supabase.
-- **Trabajo futuro:** notificaciones push cuando cambia el estado de una solicitud, calificación
-  del servicio, división del paquete JS (code splitting) y empaquetado Android con
-  `npx cap add android`.
+- **No hay proyecto Supabase**: el código del SDK y `schema.sql` están completos, pero no los he
+  ejecutado contra un backend real. Todo lo verificado es el modo local. Las políticas RLS pueden
+  necesitar ajustes al probarlas de verdad.
+- **El tiempo real del modo local** solo funciona entre pestañas del mismo navegador; entre
+  dispositivos distintos se necesita Supabase Realtime.
+- **Cámara y vibración en el navegador**: la cámara abre el selector de archivos y la vibración no hace
+  nada; con Capacitor en el teléfono funcionan, pero no generé ni probé el APK.
+- **La foto de las capturas** es un dibujo generado para la prueba automática, no una foto real.
+- **Nominatim** es un servicio comunitario limitado a 1 petición por segundo; para un uso real haría
+  falta un servidor propio o un proveedor comercial. Sus direcciones dependen de los datos de
+  OpenStreetMap y pueden ser imprecisas.
+- **Las dependencias** usan nombres de entidades reales de Cali, pero las coordenadas son aproximadas y
+  los tiempos de respuesta son ilustrativos.
+- **El prototipo de Lovable** no estaba disponible al construir la app, así que no pude comparar el
+  aspecto visual con él.
+- **Moderación**: no hay filtro de fotos ni de mensajes ofensivos, ni control de reportes duplicados.
