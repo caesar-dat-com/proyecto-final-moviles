@@ -5,6 +5,7 @@ import {
   IonListHeader, IonNote, IonPage, IonToast,
 } from '@ionic/react';
 import { cameraOutline, logOutOutline } from 'ionicons/icons';
+import BRAND from '../../helpers/brand';
 import { iniciales } from '../../helpers/utils';
 import { subirImagen } from '../../helpers/archivos';
 import { useAuthContext } from '../../context/AuthContext';
@@ -68,7 +69,7 @@ const Profile = () => {
           </IonItem>
           <IonItem>
             <IonLabel>Rol</IonLabel>
-            <IonNote slot="end">{esAdmin ? 'Administrador' : 'Usuario'}</IonNote>
+            <IonNote slot="end">{esAdmin ? BRAND.roles.admin : BRAND.roles.user}</IonNote>
           </IonItem>
         </IonList>
         <div className="ion-padding-horizontal">

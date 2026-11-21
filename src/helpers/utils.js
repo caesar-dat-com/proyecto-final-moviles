@@ -20,12 +20,22 @@ export const formatearFecha = (iso) => {
 export const formatearHora = (iso) =>
   iso ? new Date(iso).toLocaleTimeString(BRAND.locale, { hour: '2-digit', minute: '2-digit' }) : '';
 
-export const formatearPrecio = (valor) =>
-  new Intl.NumberFormat(BRAND.locale, {
+// Formatea el campo numérico `precio` según BRAND.valor.
+// Con formato 'dias' (ReportaCali) es el tiempo de respuesta estimado: «3 días hábiles».
+// Con formato 'moneda' (o sin BRAND.valor) se comporta como antes: valor en dinero.
+export const formatearPrecio = (valor) => {
+  const n = Number(valor) || 0;
+  const config = BRAND.valor || { formato: 'moneda' };
+  if (config.formato === 'dias') {
+    const sufijo = n === 1 && config.sufijoSingular ? config.sufijoSingular : config.sufijo ?? ' días';
+    return `${new Intl.NumberFormat(BRAND.locale, { maximumFractionDigits: 1 }).format(n)}${sufijo}`;
+  }
+  return new Intl.NumberFormat(BRAND.locale, {
     style: 'currency',
     currency: BRAND.moneda,
     maximumFractionDigits: 0,
-  }).format(Number(valor) || 0);
+  }).format(n);
+};
 
 export const esEmailValido = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(email).trim());
 
@@ -42,8 +52,17 @@ export const distanciaKm = (lat1, lng1, lat2, lng2) => {
 export const estadoInfo = (valor) =>
   BRAND.estados.find((e) => e.valor === valor) || { valor, texto: valor, color: 'medium' };
 
+// Estado que cierra un reporte sin resolverlo (Descartado)
+export const estadoFueraDeFlujo = () => BRAND.estados.find((e) => e.fueraDeFlujo)?.valor;
+
+// Estados que ya no están activos: el último del flujo y los que están fuera de él
+export const estadosCerrados = () => {
+  const flujo = BRAND.estados.filter((e) => !e.fueraDeFlujo);
+  return [flujo[flujo.length - 1]?.valor, ...BRAND.estados.filter((e) => e.fueraDeFlujo).map((e) => e.valor)];
+};
+
 export const siguienteEstado = (valor) => {
-  const flujo = BRAND.estados.filter((e) => e.valor !== 'cancelada');
+  const flujo = BRAND.estados.filter((e) => !e.fueraDeFlujo);
   const i = flujo.findIndex((e) => e.valor === valor);
   return i >= 0 && i < flujo.length - 1 ? flujo[i + 1].valor : null;
 };

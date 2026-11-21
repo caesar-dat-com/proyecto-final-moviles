@@ -1,5 +1,5 @@
 // Chat — sala en tiempo real con useRealtimeChat.
-// /app/chat → sala general; /app/chat/request-12 → sala de la request 12.
+// /app/chat → sala «Comunidad»; /app/chat/request-12 → sala del reporte 12 (vecinos + funcionario).
 import { useEffect, useRef, useState } from 'react';
 import {
   IonButton, IonContent, IonFooter, IonIcon, IonInput, IonItem, IonList,
@@ -51,7 +51,7 @@ const Chat = () => {
 
   return (
     <IonPage>
-      <Header titulo={`Chat · ${tituloSala(sala)}`} atras={sala !== BRAND.salaGeneral.id ? '/app/solicitudes' : null} />
+      <Header titulo={`Chat · ${tituloSala(sala)}`} atras={sala !== BRAND.salaGeneral.id ? '/app/reportes' : null} />
 
       <IonContent ref={contenido} className={styles.contenido}>
         {cargando && (
