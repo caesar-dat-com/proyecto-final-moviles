@@ -1,0 +1,39 @@
+.card {
+  border-radius: var(--app-radio);
+  box-shadow: var(--app-sombra);
+  margin: 10px 16px;
+}
+
+.imagen {
+  width: 100%;
+  max-height: 180px;
+  object-fit: cover;
+}
+
+.cabecera {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
+.titulo {
+  font-size: 1.1rem;
+}
+
+.descripcion {
+  color: var(--ion-color-dark);
+}
+
+.extra {
+  margin-top: 6px;
+  font-weight: 700;
+  color: var(--ion-color-primary);
+}
+
+.acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+}

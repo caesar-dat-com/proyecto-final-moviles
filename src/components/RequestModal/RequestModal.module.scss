@@ -1,0 +1,28 @@
+.resumen {
+  padding: 4px 4px 0;
+
+  h2 {
+    margin: 0 0 4px;
+  }
+
+  p {
+    margin: 0 0 6px;
+    color: var(--ion-color-medium-shade);
+  }
+
+  strong {
+    color: var(--ion-color-primary);
+  }
+}
+
+.nota {
+  display: block;
+  font-size: 0.8rem;
+}
+
+.foto {
+  width: 100%;
+  max-height: 220px;
+  object-fit: cover;
+  border-radius: var(--app-radio);
+}

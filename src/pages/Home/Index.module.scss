@@ -1,0 +1,25 @@
+.saludo {
+  padding: 16px 16px 4px;
+
+  h2 {
+    margin: 0 0 4px;
+    font-weight: 800;
+  }
+
+  p {
+    margin: 0;
+    color: var(--ion-color-medium-shade);
+  }
+}
+
+.centro {
+  display: grid;
+  place-items: center;
+  padding: 32px;
+}
+
+.vacio {
+  text-align: center;
+  color: var(--ion-color-medium);
+  padding: 24px;
+}

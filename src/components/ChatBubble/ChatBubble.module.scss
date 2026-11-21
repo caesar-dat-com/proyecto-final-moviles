@@ -1,0 +1,56 @@
+.fila {
+  display: flex;
+  width: 100%;
+  padding: 3px 0;
+}
+
+.propia {
+  justify-content: flex-end;
+
+  .burbuja {
+    background: var(--ion-color-primary);
+    color: #fff;
+    border-bottom-right-radius: 4px;
+  }
+
+  .hora {
+    color: rgba(255, 255, 255, 0.8);
+  }
+}
+
+.ajena {
+  justify-content: flex-start;
+
+  .burbuja {
+    background: #fff;
+    color: var(--ion-color-dark);
+    border-bottom-left-radius: 4px;
+  }
+}
+
+.burbuja {
+  max-width: 78%;
+  padding: 8px 12px;
+  border-radius: 16px;
+  box-shadow: var(--app-sombra);
+}
+
+.autor {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--ion-color-secondary-shade);
+}
+
+.texto {
+  margin: 2px 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.hora {
+  display: block;
+  text-align: right;
+  font-size: 0.65rem;
+  color: var(--ion-color-medium);
+}

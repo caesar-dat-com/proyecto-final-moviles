@@ -1,0 +1,44 @@
+.usuario {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 20px 16px;
+  border-bottom: 1px solid var(--ion-color-light-shade, #ddd);
+
+  strong {
+    display: block;
+  }
+}
+
+.avatar {
+  width: 52px;
+  height: 52px;
+  display: grid;
+  place-items: center;
+  background: var(--ion-color-primary);
+  color: #fff;
+  font-weight: 700;
+}
+
+.correo,
+.rol {
+  display: block;
+  font-size: 0.8rem;
+}
+
+.rol {
+  color: var(--ion-color-primary);
+}
+
+.activo {
+  --background: rgba(var(--ion-color-primary-rgb), 0.12);
+  --color: var(--ion-color-primary);
+  font-weight: 600;
+}
+
+.pie {
+  text-align: center;
+  font-size: 0.75rem;
+  color: var(--ion-color-medium);
+  padding: 16px;
+}

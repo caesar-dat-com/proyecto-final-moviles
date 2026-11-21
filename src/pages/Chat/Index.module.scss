@@ -1,0 +1,41 @@
+.contenido {
+  --background: #eef1f7;
+}
+
+.lista {
+  background: transparent;
+  padding: 8px 4px;
+}
+
+.item {
+  --background: transparent;
+  --padding-start: 8px;
+  --inner-padding-end: 8px;
+  --min-height: 0;
+}
+
+.barra {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 8px;
+}
+
+.input {
+  flex: 1;
+  --background: #f1f3f8;
+  --padding-start: 14px;
+  border-radius: 20px;
+}
+
+.centro {
+  display: grid;
+  place-items: center;
+  padding: 32px;
+}
+
+.vacio {
+  text-align: center;
+  color: var(--ion-color-medium);
+  padding: 24px;
+}

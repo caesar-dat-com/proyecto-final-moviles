@@ -1,0 +1,40 @@
+.contenido {
+  --background: linear-gradient(170deg, var(--ion-color-secondary) 0%, var(--ion-color-primary) 30%, #f5f7fb 30%);
+}
+
+.hero {
+  text-align: center;
+  color: #fff;
+  padding: 40px 24px 8px;
+
+  h1 {
+    margin: 0 0 4px;
+    font-weight: 800;
+  }
+
+  p {
+    margin: 0;
+    opacity: 0.9;
+  }
+}
+
+.formulario {
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+.lista {
+  border-radius: var(--app-radio);
+  box-shadow: var(--app-sombra);
+}
+
+.boton {
+  margin: 8px 16px;
+  --border-radius: 12px;
+  height: 48px;
+}
+
+.enlace {
+  text-align: center;
+  padding-bottom: 24px;
+}
