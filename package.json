@@ -1,0 +1,40 @@
+{
+  "name": "moviles-final-cesar-reyes",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "lint": "oxlint",
+    "preview": "vite preview",
+    "capturas": "node scripts/capturas.mjs http://localhost:5173/ capturas scripts/guion-demo.json",
+    "prueba:realtime": "node scripts/prueba-realtime.mjs http://localhost:5173/"
+  },
+  "dependencies": {
+    "@capacitor/camera": "^8.2.6",
+    "@capacitor/core": "^8.6.2",
+    "@capacitor/geolocation": "^8.2.5",
+    "@capacitor/haptics": "^8.0.2",
+    "@capacitor/network": "^8.0.1",
+    "@ionic/react": "^9.0.13",
+    "@ionic/react-router": "^9.0.13",
+    "@supabase/supabase-js": "^2.119.2",
+    "ionicons": "^8.1.1",
+    "leaflet": "^1.9.4",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "react-leaflet": "^5.0.0",
+    "react-router": "^6.30.6",
+    "react-router-dom": "^6.30.6"
+  },
+  "devDependencies": {
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^6.1.2",
+    "oxlint": "^1.90.0",
+    "puppeteer-core": "^25.18.1",
+    "sass": "^1.108.2",
+    "vite": "^8.3.6"
+  }
+}

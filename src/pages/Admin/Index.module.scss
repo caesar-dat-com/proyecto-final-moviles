@@ -1,0 +1,30 @@
+.metricas {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  padding: 16px;
+}
+
+.metrica {
+  background: #fff;
+  border-radius: var(--app-radio);
+  box-shadow: var(--app-sombra);
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+
+  strong {
+    font-size: 1.8rem;
+    color: var(--ion-color-primary);
+  }
+
+  span {
+    color: var(--ion-color-medium-shade);
+    font-size: 0.85rem;
+  }
+}
+
+.seccion {
+  margin: 8px 16px 0;
+  font-weight: 700;
+}

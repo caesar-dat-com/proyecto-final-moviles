@@ -1,0 +1,11 @@
+/* Variables globales. Los colores de marca se aplican en tiempo de ejecución
+   desde src/helpers/brand.js (ver aplicarTemaMarca en helpers/utils.js). */
+:root {
+  --app-radio: 14px;
+  --app-sombra: 0 4px 14px rgba(0, 0, 0, 0.08);
+}
+
+ion-content {
+  --background: #f5f7fb;
+}
+

@@ -1,0 +1,275 @@
+[
+ {
+  "limpiarStorage": true
+ },
+ {
+  "wait": 800
+ },
+ {
+  "shot": "login"
+ },
+ {
+  "clickTexto": "Regístrate"
+ },
+ {
+  "wait": 600
+ },
+ {
+  "escribir": [
+   "ion-input[data-test=\"nombre\"] >>> input",
+   "César Reyes"
+  ]
+ },
+ {
+  "escribir": [
+   "ion-input[data-test=\"email\"] >>> input",
+   "cesar@demo.local"
+  ]
+ },
+ {
+  "escribir": [
+   "ion-input[data-test=\"password\"] >>> input",
+   "clave123"
+  ]
+ },
+ {
+  "escribir": [
+   "ion-input[data-test=\"confirmacion\"] >>> input",
+   "clave123"
+  ]
+ },
+ {
+  "shot": "registro"
+ },
+ {
+  "click": "ion-button[data-test=\"btn-registro\"]"
+ },
+ {
+  "wait": 1500
+ },
+ {
+  "shot": "inicio"
+ },
+ {
+  "click": "ion-card[data-test=\"card-place\"]"
+ },
+ {
+  "wait": 800
+ },
+ {
+  "escribir": [
+   "ion-textarea[data-test=\"detalle-solicitud\"] >>> textarea",
+   "Se rompió la llave del lavaplatos"
+  ]
+ },
+ {
+  "click": "ion-item[data-test=\"btn-ubicacion\"]"
+ },
+ {
+  "wait": 800
+ },
+ {
+  "shot": "modal-solicitud"
+ },
+ {
+  "click": "ion-button[data-test=\"btn-confirmar-solicitud\"]"
+ },
+ {
+  "wait": 1200
+ },
+ {
+  "shot": "solicitud-creada"
+ },
+ {
+  "wait": 2500
+ },
+ {
+  "click": "ion-tab-button[data-test=\"tab-solicitudes\"]"
+ },
+ {
+  "wait": 1000
+ },
+ {
+  "shot": "solicitudes"
+ },
+ {
+  "click": "ion-button[data-test=\"btn-chat-solicitud\"]"
+ },
+ {
+  "wait": 1000
+ },
+ {
+  "escribir": [
+   "ion-input[data-test=\"chat-input\"] >>> input",
+   "Hola, ¿a qué hora llegan?"
+  ]
+ },
+ {
+  "click": "ion-button[data-test=\"chat-enviar\"]"
+ },
+ {
+  "wait": 800
+ },
+ {
+  "shot": "chat-solicitud"
+ },
+ {
+  "goto": "/app/chat"
+ },
+ {
+  "wait": 1200
+ },
+ {
+  "escribir": [
+   "ion-input[data-test=\"chat-input\"] >>> input",
+   "¡Hola comunidad!"
+  ]
+ },
+ {
+  "click": "ion-button[data-test=\"chat-enviar\"]"
+ },
+ {
+  "wait": 800
+ },
+ {
+  "shot": "chat-general"
+ },
+ {
+  "click": "ion-tab-button[data-test=\"tab-mapa\"]"
+ },
+ {
+  "wait": 3000
+ },
+ {
+  "shot": "mapa"
+ },
+ {
+  "click": "ion-tab-button[data-test=\"tab-perfil\"]"
+ },
+ {
+  "wait": 1200
+ },
+ {
+  "shot": "perfil"
+ },
+ {
+  "click": "ion-menu-button[data-test=\"btn-menu\"]"
+ },
+ {
+  "wait": 800
+ },
+ {
+  "shot": "menu"
+ },
+ {
+  "clickTexto": "Cerrar sesión"
+ },
+ {
+  "wait": 1200
+ },
+ {
+  "escribir": [
+   "ion-input[data-test=\"email\"] >>> input",
+   "admin@demo.local"
+  ]
+ },
+ {
+  "escribir": [
+   "ion-input[data-test=\"password\"] >>> input",
+   "admin123"
+  ]
+ },
+ {
+  "click": "ion-button[data-test=\"btn-login\"]"
+ },
+ {
+  "wait": 1500
+ },
+ {
+  "shot": "admin-panel"
+ },
+ {
+  "click": "ion-tab-button[data-test=\"tab-solicitudes\"]"
+ },
+ {
+  "wait": 1000
+ },
+ {
+  "click": "ion-button[data-test=\"btn-avanzar\"]"
+ },
+ {
+  "wait": 2500
+ },
+ {
+  "shot": "admin-solicitudes"
+ },
+ {
+  "click": "ion-button[data-test=\"btn-chat-solicitud\"]"
+ },
+ {
+  "wait": 1000
+ },
+ {
+  "escribir": [
+   "ion-input[data-test=\"chat-input\"] >>> input",
+   "Llegamos en 20 minutos"
+  ]
+ },
+ {
+  "click": "ion-button[data-test=\"chat-enviar\"]"
+ },
+ {
+  "wait": 800
+ },
+ {
+  "shot": "admin-chat"
+ },
+ {
+  "goto": "/app/inicio"
+ },
+ {
+  "wait": 1200
+ },
+ {
+  "click": "ion-fab-button[data-test=\"btn-nuevo-place\"]"
+ },
+ {
+  "wait": 800
+ },
+ {
+  "escribir": [
+   "ion-input[data-test=\"place-nombre\"] >>> input",
+   "Pintores Unidos"
+  ]
+ },
+ {
+  "escribir": [
+   "ion-input[data-test=\"place-precio\"] >>> input",
+   "75000"
+  ]
+ },
+ {
+  "clickTexto": "Usar mi ubicación"
+ },
+ {
+  "wait": 800
+ },
+ {
+  "shot": "admin-nuevo-place"
+ },
+ {
+  "click": "ion-button[data-test=\"btn-guardar-place\"]"
+ },
+ {
+  "wait": 2800
+ },
+ {
+  "click": "ion-tab-button[data-test=\"tab-mapa\"]"
+ },
+ {
+  "wait": 3000
+ },
+ {
+  "shot": "admin-mapa"
+ }
+]

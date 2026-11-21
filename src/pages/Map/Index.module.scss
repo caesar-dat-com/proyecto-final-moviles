@@ -1,0 +1,31 @@
+.layout {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.mapa {
+  position: relative;
+  flex: 1 1 60%;
+  min-height: 0;
+}
+
+.fab {
+  z-index: 500;
+}
+
+.panel {
+  flex: 0 0 auto;
+  max-height: 40%;
+  overflow-y: auto;
+  background: #fff;
+  border-top-left-radius: 18px;
+  border-top-right-radius: 18px;
+  box-shadow: 0 -4px 14px rgba(0, 0, 0, 0.08);
+}
+
+.nota {
+  display: block;
+  padding: 4px 16px;
+  font-size: 0.85rem;
+}
