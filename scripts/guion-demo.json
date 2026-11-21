@@ -51,49 +51,58 @@
   "shot": "inicio"
  },
  {
-  "click": "ion-card[data-test=\"card-place\"]"
+  "clickTexto": "UAESPM — Alumbrado público"
  },
  {
-  "wait": 800
+  "wait": 900
  },
  {
   "escribir": [
-   "ion-textarea[data-test=\"detalle-solicitud\"] >>> textarea",
-   "Se rompió la llave del lavaplatos"
+   "ion-textarea[data-test=\"detalle-reporte\"] >>> textarea",
+   "Poste sin luz frente al parque, la cuadra queda a oscuras"
   ]
  },
  {
   "click": "ion-item[data-test=\"btn-ubicacion\"]"
  },
  {
-  "wait": 800
+  "subirFoto": [
+   "ion-item[data-test=\"btn-foto\"]",
+   "scripts/fixtures/foto-prueba.jpg"
+  ]
  },
  {
-  "shot": "modal-solicitud"
- },
- {
-  "click": "ion-button[data-test=\"btn-confirmar-solicitud\"]"
- },
- {
-  "wait": 1200
- },
- {
-  "shot": "solicitud-creada"
+  "esperarTexto": "días hábiles"
  },
  {
   "wait": 2500
  },
  {
-  "click": "ion-tab-button[data-test=\"tab-solicitudes\"]"
+  "shot": "modal-reporte"
  },
  {
-  "wait": 1000
+  "click": "ion-button[data-test=\"btn-confirmar-reporte\"]"
  },
  {
-  "shot": "solicitudes"
+  "wait": 1200
  },
  {
-  "click": "ion-button[data-test=\"btn-chat-solicitud\"]"
+  "shot": "reporte-creado"
+ },
+ {
+  "wait": 2500
+ },
+ {
+  "click": "ion-tab-button[data-test=\"tab-reportes\"]"
+ },
+ {
+  "wait": 3500
+ },
+ {
+  "shot": "reportes"
+ },
+ {
+  "click": "ion-button[data-test=\"btn-chat-reporte\"]"
  },
  {
   "wait": 1000
@@ -101,8 +110,11 @@
  {
   "escribir": [
    "ion-input[data-test=\"chat-input\"] >>> input",
-   "Hola, ¿a qué hora llegan?"
+   "Vecinos: el poste lleva tres noches apagado"
   ]
+ },
+ {
+  "wait": 400
  },
  {
   "click": "ion-button[data-test=\"chat-enviar\"]"
@@ -111,7 +123,7 @@
   "wait": 800
  },
  {
-  "shot": "chat-solicitud"
+  "shot": "chat-reporte"
  },
  {
   "goto": "/app/chat"
@@ -122,8 +134,11 @@
  {
   "escribir": [
    "ion-input[data-test=\"chat-input\"] >>> input",
-   "¡Hola comunidad!"
+   "¡Hola, vecinos del barrio!"
   ]
+ },
+ {
+  "wait": 400
  },
  {
   "click": "ion-button[data-test=\"chat-enviar\"]"
@@ -132,10 +147,16 @@
   "wait": 800
  },
  {
-  "shot": "chat-general"
+  "shot": "chat-comunidad"
  },
  {
   "click": "ion-tab-button[data-test=\"tab-mapa\"]"
+ },
+ {
+  "wait": 3500
+ },
+ {
+  "click": ".leaflet-marker-icon i"
  },
  {
   "wait": 3000
@@ -170,7 +191,7 @@
  {
   "escribir": [
    "ion-input[data-test=\"email\"] >>> input",
-   "admin@demo.local"
+   "funcionario@demo.local"
   ]
  },
  {
@@ -186,13 +207,16 @@
   "wait": 1500
  },
  {
-  "shot": "admin-panel"
+  "shot": "funcionario-panel"
  },
  {
-  "click": "ion-tab-button[data-test=\"tab-solicitudes\"]"
+  "wait": 1500
  },
  {
-  "wait": 1000
+  "click": "ion-tab-button[data-test=\"tab-reportes\"]"
+ },
+ {
+  "wait": 1500
  },
  {
   "click": "ion-button[data-test=\"btn-avanzar\"]"
@@ -201,10 +225,10 @@
   "wait": 2500
  },
  {
-  "shot": "admin-solicitudes"
+  "shot": "funcionario-reportes"
  },
  {
-  "click": "ion-button[data-test=\"btn-chat-solicitud\"]"
+  "click": "ion-button[data-test=\"btn-chat-reporte\"]"
  },
  {
   "wait": 1000
@@ -212,8 +236,11 @@
  {
   "escribir": [
    "ion-input[data-test=\"chat-input\"] >>> input",
-   "Llegamos en 20 minutos"
+   "Recibido: cuadrilla de alumbrado programada para mañana"
   ]
+ },
+ {
+  "wait": 400
  },
  {
   "click": "ion-button[data-test=\"chat-enviar\"]"
@@ -222,7 +249,7 @@
   "wait": 800
  },
  {
-  "shot": "admin-chat"
+  "shot": "funcionario-chat"
  },
  {
   "goto": "/app/inicio"
@@ -231,21 +258,21 @@
   "wait": 1200
  },
  {
-  "click": "ion-fab-button[data-test=\"btn-nuevo-place\"]"
+  "click": "ion-fab-button[data-test=\"btn-nueva-dependencia\"]"
  },
  {
   "wait": 800
  },
  {
   "escribir": [
-   "ion-input[data-test=\"place-nombre\"] >>> input",
-   "Pintores Unidos"
+   "ion-input[data-test=\"dependencia-nombre\"] >>> input",
+   "Secretaría de Infraestructura — Andenes"
   ]
  },
  {
   "escribir": [
-   "ion-input[data-test=\"place-precio\"] >>> input",
-   "75000"
+   "ion-input[data-test=\"dependencia-dias\"] >>> input",
+   "15"
   ]
  },
  {
@@ -255,10 +282,10 @@
   "wait": 800
  },
  {
-  "shot": "admin-nuevo-place"
+  "shot": "funcionario-nueva-dependencia"
  },
  {
-  "click": "ion-button[data-test=\"btn-guardar-place\"]"
+  "click": "ion-button[data-test=\"btn-guardar-dependencia\"]"
  },
  {
   "wait": 2800
@@ -267,9 +294,9 @@
   "click": "ion-tab-button[data-test=\"tab-mapa\"]"
  },
  {
-  "wait": 3000
+  "wait": 3500
  },
  {
-  "shot": "admin-mapa"
+  "shot": "funcionario-mapa"
  }
 ]

@@ -80,7 +80,7 @@ const Login = () => {
             <IonNote className={styles.aviso} data-test="aviso-modo-local">
               Modo local sin backend (no hay llaves de Supabase). Cuentas de demostración:
               <br />
-              admin@demo.local / admin123 · tecnico@demo.local / demo123
+              ciudadano@demo.local / demo123 · funcionario@demo.local / admin123
             </IonNote>
           </IonText>
         )}

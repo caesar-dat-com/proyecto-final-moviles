@@ -5,7 +5,7 @@ import {
 } from '@ionic/react';
 import { useLocation } from 'react-router-dom';
 import {
-  chatbubblesOutline, gridOutline, homeOutline, logOutOutline, mapOutline, personOutline, receiptOutline,
+  chatbubblesOutline, gridOutline, homeOutline, logOutOutline, mapOutline, personOutline, megaphoneOutline,
 } from 'ionicons/icons';
 import BRAND from '../../helpers/brand';
 import { iniciales } from '../../helpers/utils';
@@ -17,9 +17,9 @@ const Menu = () => {
   const { pathname } = useLocation();
 
   const opciones = [
-    { url: '/app/inicio', texto: esAdmin ? 'Panel de administración' : 'Inicio', icono: esAdmin ? gridOutline : homeOutline },
+    { url: '/app/inicio', texto: esAdmin ? 'Panel del funcionario' : 'Inicio', icono: esAdmin ? gridOutline : homeOutline },
     { url: '/app/mapa', texto: 'Mapa', icono: mapOutline },
-    { url: '/app/solicitudes', texto: BRAND.entidades.request.plural, icono: receiptOutline },
+    { url: '/app/reportes', texto: BRAND.entidades.request.plural, icono: megaphoneOutline },
     { url: '/app/chat', texto: 'Chat', icono: chatbubblesOutline },
     { url: '/app/perfil', texto: 'Mi perfil', icono: personOutline },
   ];
@@ -39,7 +39,7 @@ const Menu = () => {
           <div>
             <strong>{perfil?.nombre}</strong>
             <IonNote className={styles.correo}>{usuario?.email}</IonNote>
-            <IonNote className={styles.rol}>{esAdmin ? 'Administrador' : 'Usuario'}</IonNote>
+            <IonNote className={styles.rol}>{esAdmin ? BRAND.roles.admin : BRAND.roles.user}</IonNote>
           </div>
         </div>
 

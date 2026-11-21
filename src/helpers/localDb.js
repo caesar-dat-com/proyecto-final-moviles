@@ -4,9 +4,10 @@
 // Expone una mini API tipo base de datos para que los hooks mantengan
 // la misma interfaz con o sin backend.
 import { generarId, hashTexto } from './utils';
-import { SEED_MESSAGES, SEED_PLACES, SEED_USUARIOS } from './seeds';
+import { SEED_MESSAGES, SEED_PLACES, SEED_REQUESTS, SEED_USUARIOS } from './seeds';
 
-const PREFIJO = 'app-local';
+// Prefijo propio de ReportaCali: los datos del tema anterior quedan ignorados
+const PREFIJO = 'reportacali-local';
 const clave = (tabla) => `${PREFIJO}:${tabla}`;
 const oyentes = new Map(); // tabla -> Set(callback)
 
@@ -114,6 +115,9 @@ export const sembrarDatos = async () => {
     'messages',
     SEED_MESSAGES.map((m) => ({ ...m, created_at: new Date(ahora).toISOString() })),
   );
-  escribirTabla('requests', []);
+  escribirTabla(
+    'requests',
+    SEED_REQUESTS.map((r, i) => ({ ...r, created_at: new Date(ahora - (i + 1) * 3600000).toISOString() })),
+  );
   localStorage.setItem(clave('_sembrado'), '1');
 };

@@ -1,9 +1,13 @@
 -- ============================================================
 -- Esquema de base de datos para Supabase (Clase 09)
 -- Ejecutar en: Supabase → SQL Editor → New query → Run
--- Tablas con nombres neutros para poder re-tematizar la app:
---   profiles (usuarios), places (puntos en el mapa),
---   requests (solicitudes/pedidos), messages (chat)
+-- ReportaCali — reportes urbanos geolocalizados.
+-- Tablas con nombres neutros (la app las muestra con los nombres de brand.js):
+--   profiles = ciudadanos (rol 'user') y funcionarios (rol 'admin')
+--   places   = dependencias responsables por tipo de incidencia
+--              (`precio` = días hábiles de respuesta estimada, NO dinero)
+--   requests = reportes de los ciudadanos (foto, lat/lng, categoría, estado)
+--   messages = chat de cada reporte ('request-<id>') y sala 'general' (Comunidad)
 -- ============================================================
 
 -- ---------- profiles: un perfil por usuario de auth.users ----------
@@ -30,9 +34,9 @@ $$;
 create or replace function public.mi_rol()
 returns text
 language sql stable security definer set search_path = public
-as $
+as $$
   select rol from public.profiles where id = auth.uid();
-$;
+$$;
 
 -- Crea el perfil automáticamente al registrarse
 create or replace function public.crear_perfil()
@@ -52,29 +56,30 @@ create trigger al_registrar_usuario
   after insert on auth.users
   for each row execute function public.crear_perfil();
 
--- ---------- places: puntos que se muestran en el mapa ----------
+-- ---------- places: dependencias responsables (una por categoría de incidencia) ----------
 create table if not exists public.places (
   id bigint generated always as identity primary key,
   nombre text not null,
   descripcion text,
   categoria text,
-  precio numeric default 0,
+  precio numeric default 0, -- días hábiles de respuesta estimada
   lat double precision not null,
   lng double precision not null,
   imagen_url text,
   created_at timestamptz default now()
 );
 
--- ---------- requests: transacción principal (solicitud / pedido) ----------
+-- ---------- requests: reportes urbanos (transacción principal) ----------
 create table if not exists public.requests (
   id bigint generated always as identity primary key,
   user_id uuid not null references auth.users default auth.uid(),
   place_id bigint references public.places on delete set null,
-  place_nombre text,
-  cliente_nombre text,
+  place_nombre text,            -- dependencia asignada (copia para mostrar sin join)
+  cliente_nombre text,          -- nombre del ciudadano que reporta
+  categoria text,               -- Huecos y vías, Alumbrado, Basuras, Acueducto, Semáforos, Inseguridad
   detalle text not null,
-  estado text not null default 'pendiente'
-    check (estado in ('pendiente', 'aceptada', 'en_camino', 'completada', 'cancelada')),
+  estado text not null default 'nuevo'
+    check (estado in ('nuevo', 'en_revision', 'asignado', 'resuelto', 'descartado')),
   lat double precision,
   lng double precision,
   foto_url text,
@@ -122,35 +127,30 @@ create policy "admin edita places" on public.places
 create policy "admin borra places" on public.places
   for delete to authenticated using (public.es_admin());
 
--- requests: cada usuario ve/gestiona las suyas; el admin ve y edita todas
-create policy "ver mis requests" on public.requests
-  for select to authenticated using ((select auth.uid()) = user_id or public.es_admin());
-create policy "crear mis requests" on public.requests
-  for insert to authenticated with check ((select auth.uid()) = user_id);
-create policy "editar mis requests" on public.requests
-  for update to authenticated using ((select auth.uid()) = user_id or public.es_admin());
+-- requests (reportes): son públicos para los vecinos autenticados (se ven en el mapa);
+-- cada ciudadano crea los suyos y solo puede retirarlos (descartado) mientras están en 'nuevo';
+-- el funcionario (admin) cambia el estado de cualquiera.
+create policy "ver reportes" on public.requests
+  for select to authenticated using (true);
+create policy "crear mis reportes" on public.requests
+  for insert to authenticated with check ((select auth.uid()) = user_id and estado = 'nuevo');
+create policy "retirar mi reporte nuevo" on public.requests
+  for update to authenticated
+  using ((select auth.uid()) = user_id and estado = 'nuevo')
+  with check ((select auth.uid()) = user_id and estado in ('nuevo', 'descartado'));
+create policy "funcionario gestiona reportes" on public.requests
+  for update to authenticated using (public.es_admin()) with check (public.es_admin());
 
--- messages: sala general abierta a autenticados; sala de una request
--- solo para su dueño y el admin
+-- messages: la sala general y el chat de cada reporte están abiertos a todos los
+-- autenticados (vecinos + funcionario). Solo se puede escribir en salas que existen.
 create policy "leer mensajes" on public.messages
-  for select to authenticated using (
-    room = 'general'
-    or public.es_admin()
-    or exists (
-      select 1 from public.requests r
-      where 'request-' || r.id = room and r.user_id = (select auth.uid())
-    )
-  );
+  for select to authenticated using (true);
 create policy "enviar mensajes" on public.messages
   for insert to authenticated with check (
     (select auth.uid()) = user_id
     and (
       room = 'general'
-      or public.es_admin()
-      or exists (
-        select 1 from public.requests r
-        where 'request-' || r.id = room and r.user_id = (select auth.uid())
-      )
+      or exists (select 1 from public.requests r where 'request-' || r.id = room)
     )
   );
 
@@ -162,7 +162,7 @@ alter publication supabase_realtime add table public.requests;
 alter publication supabase_realtime add table public.places;
 
 -- ============================================================
--- Storage: bucket público "avatars" (fotos de perfil y de solicitudes)
+-- Storage: bucket público "avatars" (fotos de perfil y de los reportes)
 -- Ruta de cada archivo: <uid>/<nombre>.jpg
 -- ============================================================
 insert into storage.buckets (id, name, public)
@@ -182,6 +182,6 @@ create policy "eliminar mis archivos" on storage.objects
   using (bucket_id = 'avatars' and (storage.foldername(name))[1] = (select auth.uid())::text);
 
 -- ============================================================
--- Para volver admin a un usuario (después de que se registre):
---   update public.profiles set rol = 'admin' where email = 'correo@ejemplo.com';
+-- Para volver funcionario (admin) a un usuario (después de que se registre):
+--   update public.profiles set rol = 'admin' where email = 'funcionario@demo.local';
 -- ============================================================

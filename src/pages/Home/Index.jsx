@@ -1,11 +1,14 @@
-// Home — catálogo de places con búsqueda, filtro por categoría y creación de requests.
+// Home (ciudadano) — botón para reportar un problema y «catálogo» de dependencias
+// responsables, con búsqueda y filtro por categoría. Tocar una dependencia abre el
+// formulario de reporte con su categoría ya elegida.
 import { useMemo, useState } from 'react';
 import {
-  IonContent, IonLabel, IonPage, IonRefresher, IonRefresherContent, IonSearchbar,
-  IonSegment, IonSegmentButton, IonSpinner, IonToast, IonToolbar,
+  IonButton, IonContent, IonFab, IonFabButton, IonIcon, IonLabel, IonPage, IonRefresher,
+  IonRefresherContent, IonSearchbar, IonSegment, IonSegmentButton, IonSpinner, IonToast, IonToolbar,
 } from '@ionic/react';
+import { add, megaphoneOutline } from 'ionicons/icons';
 import BRAND from '../../helpers/brand';
-import { distanciaKm, formatearPrecio } from '../../helpers/utils';
+import { distanciaKm, estadosCerrados, formatearPrecio } from '../../helpers/utils';
 import { subirImagen } from '../../helpers/archivos';
 import { useAuthContext } from '../../context/AuthContext';
 import useCollection from '../../hooks/useCollection';
@@ -20,8 +23,8 @@ import styles from './Index.module.scss';
 
 const Home = () => {
   const { perfil } = useAuthContext();
-  const { items: places, cargando, getAll } = useCollection('places', { orden: { campo: 'nombre', asc: true }, realtime: true });
-  const solicitudes = useCollection('requests', { realtime: true, filtros: [['user_id', '==', perfil.id]] });
+  const { items: dependencias, cargando, getAll } = useCollection('places', { orden: { campo: 'nombre', asc: true }, realtime: true });
+  const reportes = useCollection('requests', { realtime: true, filtros: [['user_id', '==', perfil.id]] });
   const { posicion } = useGeolocation();
   const { conectado } = useNetwork();
   const { exito } = useHaptics();
@@ -29,38 +32,42 @@ const Home = () => {
   // La última categoría elegida se recuerda en la memoria local
   const [categoria, setCategoria] = useLocalStorage('home:categoria', 'todas');
   const [busqueda, setBusqueda] = useState('');
-  const [seleccionado, setSeleccionado] = useState(null);
+  // null = modal cerrado; { categoria } = abierto (categoría opcional)
+  const [formulario, setFormulario] = useState(null);
   const [toast, setToast] = useState(null);
+
+  const activos = reportes.items.filter((r) => !estadosCerrados().includes(r.estado)).length;
 
   const visibles = useMemo(() => {
     const texto = busqueda.trim().toLowerCase();
-    return places
+    return dependencias
       .filter((p) => categoria === 'todas' || p.categoria === categoria)
-      .filter((p) => !texto || `${p.nombre} ${p.descripcion}`.toLowerCase().includes(texto))
+      .filter((p) => !texto || `${p.nombre} ${p.descripcion} ${p.categoria}`.toLowerCase().includes(texto))
       .map((p) => ({
         ...p,
         distancia: posicion && p.lat != null ? distanciaKm(posicion.lat, posicion.lng, Number(p.lat), Number(p.lng)) : null,
       }))
       .sort((a, b) => (a.distancia ?? 0) - (b.distancia ?? 0));
-  }, [places, categoria, busqueda, posicion]);
+  }, [dependencias, categoria, busqueda, posicion]);
 
-  const crearSolicitud = async ({ detalle, posicion: pos, foto }) => {
+  const crearReporte = async ({ categoria: cat, dependencia, detalle, posicion: pos, foto }) => {
     try {
-      const foto_url = foto ? await subirImagen(perfil.id, foto, 'solicitud') : null;
-      await solicitudes.add({
+      const foto_url = foto ? await subirImagen(perfil.id, foto, 'reporte') : null;
+      await reportes.add({
         user_id: perfil.id,
-        place_id: seleccionado.id,
-        place_nombre: seleccionado.nombre,
+        place_id: dependencia?.id ?? null,
+        place_nombre: dependencia?.nombre ?? null,
         cliente_nombre: perfil.nombre,
+        categoria: cat,
         detalle: detalle.trim(),
-        estado: 'pendiente',
+        estado: BRAND.estados[0].valor,
         lat: pos?.lat ?? null,
         lng: pos?.lng ?? null,
         foto_url,
       });
       exito();
-      setSeleccionado(null);
-      setToast({ texto: `${BRAND.entidades.request.singular} enviada. Síguela en la pestaña ${BRAND.entidades.request.plural}.`, color: 'success' });
+      setFormulario(null);
+      setToast({ texto: `${BRAND.entidades.request.singular} enviado. Síguelo en la pestaña ${BRAND.entidades.request.plural}.`, color: 'success' });
     } catch (e) {
       setToast({ texto: `No se pudo enviar: ${e.message}`, color: 'danger' });
     }
@@ -89,7 +96,9 @@ const Home = () => {
             </IonSegmentButton>
             {BRAND.categorias.map((c) => (
               <IonSegmentButton key={c} value={c}>
-                <IonLabel>{c}</IonLabel>
+                <IonLabel>
+                  {BRAND.iconosCategoria[c]?.emoji} {c}
+                </IonLabel>
               </IonSegmentButton>
             ))}
           </IonSegment>
@@ -106,6 +115,16 @@ const Home = () => {
           <p>{BRAND.descripcion}</p>
         </div>
 
+        <IonButton expand="block" className={styles.cta} onClick={() => setFormulario({})} data-test="btn-nuevo-reporte">
+          <IonIcon slot="start" icon={megaphoneOutline} />
+          Reportar un problema
+        </IonButton>
+        <p className={styles.vacio} style={{ padding: '8px 16px 0' }} data-test="mis-activos">
+          Tienes {activos} {activos === 1 ? 'reporte activo' : 'reportes activos'}.
+        </p>
+
+        <h3 className={styles.seccion}>{BRAND.entidades.place.plural} responsables</h3>
+
         {cargando && (
           <div className={styles.centro}>
             <IonSpinner />
@@ -117,21 +136,27 @@ const Home = () => {
           <CardItem
             key={p.id}
             titulo={p.nombre}
-            subtitulo={p.distancia != null ? `${p.categoria} · a ${p.distancia.toFixed(1)} km` : p.categoria}
+            subtitulo={`${BRAND.iconosCategoria[p.categoria]?.emoji ?? ''} ${p.categoria}${p.distancia != null ? ` · a ${p.distancia.toFixed(1)} km` : ''}`}
             descripcion={p.descripcion}
-            extra={`Desde ${formatearPrecio(p.precio)}`}
-            etiqueta={p.categoria}
-            colorEtiqueta="secondary"
-            onClick={() => setSeleccionado(p)}
-            dataTest="card-place"
+            extra={`${BRAND.valor.etiqueta}: ${formatearPrecio(p.precio)}`}
+            onClick={() => setFormulario({ categoria: p.categoria })}
+            dataTest="card-dependencia"
           />
         ))}
+        <div className={styles.espacioFab} />
+
+        <IonFab vertical="bottom" horizontal="end" slot="fixed">
+          <IonFabButton onClick={() => setFormulario({})} data-test="fab-nuevo-reporte">
+            <IonIcon icon={add} />
+          </IonFabButton>
+        </IonFab>
 
         <RequestModal
-          place={seleccionado}
-          abierto={Boolean(seleccionado)}
-          onCerrar={() => setSeleccionado(null)}
-          onConfirmar={crearSolicitud}
+          abierto={Boolean(formulario)}
+          categoriaInicial={formulario?.categoria}
+          dependencias={dependencias}
+          onCerrar={() => setFormulario(null)}
+          onConfirmar={crearReporte}
           deshabilitado={!conectado}
         />
         <IonToast isOpen={Boolean(toast)} message={toast?.texto} color={toast?.color} duration={2500} onDidDismiss={() => setToast(null)} />

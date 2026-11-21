@@ -1,4 +1,5 @@
-// Admin — panel del administrador: métricas en vivo y CRUD de places.
+// Admin — panel del funcionario: métricas de reportes en vivo y CRUD de dependencias
+// (tabla places; el campo `precio` guarda los días hábiles de respuesta estimada).
 import { useState } from 'react';
 import {
   IonButton, IonButtons, IonContent, IonFab, IonFabButton, IonHeader, IonIcon, IonInput,
@@ -7,7 +8,7 @@ import {
 } from '@ionic/react';
 import { add, createOutline, locateOutline, trashOutline } from 'ionicons/icons';
 import BRAND from '../../helpers/brand';
-import { formatearPrecio } from '../../helpers/utils';
+import { estadoInfo, formatearPrecio } from '../../helpers/utils';
 import useCollection from '../../hooks/useCollection';
 import useGeolocation from '../../hooks/useGeolocation';
 import Header from '../../components/shared/Header';
@@ -18,19 +19,23 @@ const VACIO = { nombre: '', descripcion: '', categoria: BRAND.categorias[0], pre
 
 const Admin = () => {
   const places = useCollection('places', { orden: { campo: 'nombre', asc: true }, realtime: true });
-  const { items: solicitudes } = useCollection('requests', { realtime: true });
+  const { items: reportes } = useCollection('requests', { realtime: true });
   const { obtenerActual } = useGeolocation({ auto: false });
   const [form, setForm] = useState(null); // null = modal cerrado
   const [toast, setToast] = useState(null);
   const [alerta] = useIonAlert();
 
-  const conteo = (estado) => solicitudes.filter((s) => s.estado === estado).length;
+  const conteo = (...estados) => reportes.filter((r) => estados.includes(r.estado)).length;
   const metricas = [
+    { titulo: estadoInfo('nuevo').texto + 's', valor: conteo('nuevo') },
+    { titulo: 'En proceso', valor: conteo('en_revision', 'asignado') },
+    { titulo: estadoInfo('resuelto').texto + 's', valor: conteo('resuelto') },
     { titulo: BRAND.entidades.place.plural, valor: places.items.length },
-    { titulo: 'Pendientes', valor: conteo('pendiente') },
-    { titulo: 'En curso', valor: conteo('aceptada') + conteo('en_camino') },
-    { titulo: 'Completadas', valor: conteo('completada') },
   ];
+  // Carga por categoría: cuántos reportes abiertos tiene cada tipo de incidencia
+  const porCategoria = BRAND.categorias
+    .map((c) => ({ c, n: reportes.filter((r) => r.categoria === c && ['nuevo', 'en_revision', 'asignado'].includes(r.estado)).length }))
+    .filter((x) => x.n > 0);
 
   const cambiar = (campo) => (e) => setForm((f) => ({ ...f, [campo]: e.detail.value ?? '' }));
 
@@ -68,7 +73,7 @@ const Admin = () => {
 
   return (
     <IonPage>
-      <Header titulo="Panel de administración" />
+      <Header titulo="Panel del funcionario" />
       <IonContent>
         <div className={styles.metricas}>
           {metricas.map((m) => (
@@ -79,9 +84,15 @@ const Admin = () => {
           ))}
         </div>
 
-        <h3 className={styles.seccion}>{BRAND.entidades.place.plural}</h3>
+        {porCategoria.length > 0 && (
+          <p className={styles.seccion} data-test="carga-categorias">
+            Abiertos: {porCategoria.map((x) => `${BRAND.iconosCategoria[x.c]?.emoji} ${x.c} (${x.n})`).join(' · ')}
+          </p>
+        )}
+
+        <h3 className={styles.seccion}>{BRAND.entidades.place.plural} responsables</h3>
         {places.items.map((p) => (
-          <CardItem key={p.id} titulo={p.nombre} subtitulo={p.categoria} descripcion={p.descripcion} extra={formatearPrecio(p.precio)} dataTest="card-admin-place">
+          <CardItem key={p.id} titulo={p.nombre} subtitulo={p.categoria} descripcion={p.descripcion} extra={`${BRAND.valor.etiqueta}: ${formatearPrecio(p.precio)}`} dataTest="card-admin-dependencia">
             <IonButton size="small" fill="outline" onClick={() => setForm({ ...p })}>
               <IonIcon slot="start" icon={createOutline} />
               Editar
@@ -94,7 +105,7 @@ const Admin = () => {
         ))}
 
         <IonFab vertical="bottom" horizontal="end" slot="fixed">
-          <IonFabButton onClick={() => setForm({ ...VACIO })} data-test="btn-nuevo-place">
+          <IonFabButton onClick={() => setForm({ ...VACIO })} data-test="btn-nueva-dependencia">
             <IonIcon icon={add} />
           </IonFabButton>
         </IonFab>
@@ -102,7 +113,7 @@ const Admin = () => {
         <IonModal isOpen={Boolean(form)} onDidDismiss={() => setForm(null)}>
           <IonHeader>
             <IonToolbar color="primary">
-              <IonTitle>{form?.id ? 'Editar' : 'Nuevo'} {BRAND.entidades.place.singular.toLowerCase()}</IonTitle>
+              <IonTitle>{form?.id ? 'Editar' : 'Nueva'} {BRAND.entidades.place.singular.toLowerCase()}</IonTitle>
               <IonButtons slot="end">
                 <IonButton onClick={() => setForm(null)}>Cerrar</IonButton>
               </IonButtons>
@@ -112,7 +123,7 @@ const Admin = () => {
             <IonContent className="ion-padding">
               <IonList inset>
                 <IonItem>
-                  <IonInput label="Nombre" labelPlacement="stacked" value={form.nombre} onIonInput={cambiar('nombre')} data-test="place-nombre" />
+                  <IonInput label="Nombre" labelPlacement="stacked" value={form.nombre} onIonInput={cambiar('nombre')} data-test="dependencia-nombre" />
                 </IonItem>
                 <IonItem>
                   <IonTextarea label="Descripción" labelPlacement="stacked" autoGrow value={form.descripcion} onIonInput={cambiar('descripcion')} />
@@ -127,7 +138,15 @@ const Admin = () => {
                   </IonSelect>
                 </IonItem>
                 <IonItem>
-                  <IonInput label={`Precio (${BRAND.moneda})`} labelPlacement="stacked" type="number" value={form.precio} onIonInput={cambiar('precio')} data-test="place-precio" />
+                  <IonInput
+                    label={BRAND.valor.formato === 'dias' ? `${BRAND.valor.etiqueta} (días hábiles)` : `${BRAND.valor.etiqueta} (${BRAND.moneda})`}
+                    labelPlacement="stacked"
+                    type="number"
+                    min="0"
+                    value={form.precio}
+                    onIonInput={cambiar('precio')}
+                    data-test="dependencia-dias"
+                  />
                 </IonItem>
                 <IonItem>
                   <IonInput label="Latitud" labelPlacement="stacked" type="number" value={form.lat} onIonInput={cambiar('lat')} />
@@ -140,7 +159,7 @@ const Admin = () => {
                 <IonIcon slot="start" icon={locateOutline} />
                 Usar mi ubicación
               </IonButton>
-              <IonButton expand="block" onClick={guardar} data-test="btn-guardar-place">
+              <IonButton expand="block" onClick={guardar} data-test="btn-guardar-dependencia">
                 Guardar
               </IonButton>
             </IonContent>

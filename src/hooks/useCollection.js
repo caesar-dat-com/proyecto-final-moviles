@@ -1,5 +1,5 @@
 // useCollection — CRUD genérico sobre cualquier tabla (estilo Clase 07).
-// Filtros con el formato del curso: [["categoria", "==", "Aseo"], ["precio", "<", 80000]]
+// Filtros con el formato del curso: [["categoria", "==", "Alumbrado"], ["estado", "!=", "resuelto"]]
 // Con `realtime: true` la lista se refresca sola ante cambios de otros usuarios/pestañas.
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { haySupabase, supabase } from '../lib/supabase';

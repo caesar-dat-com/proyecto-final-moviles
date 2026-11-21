@@ -1,7 +1,7 @@
 // AdminRoutes — pestañas del administrador (panel + gestión de todo).
 import { IonIcon, IonLabel, IonRouterOutlet, IonTabBar, IonTabButton, IonTabs } from '@ionic/react';
 import { Navigate, Route } from 'react-router-dom';
-import { chatbubblesOutline, gridOutline, mapOutline, personOutline, receiptOutline } from 'ionicons/icons';
+import { chatbubblesOutline, gridOutline, mapOutline, personOutline, megaphoneOutline } from 'ionicons/icons';
 import BRAND from '../helpers/brand';
 import Admin from '../pages/Admin/Index';
 import MapPage from '../pages/Map/Index';
@@ -14,7 +14,7 @@ const AdminRoutes = () => (
     <IonRouterOutlet>
       <Route path="inicio" element={<Admin />} />
       <Route path="mapa" element={<MapPage />} />
-      <Route path="solicitudes" element={<Orders />} />
+      <Route path="reportes" element={<Orders />} />
       <Route path="chat" element={<Chat />} />
       <Route path="chat/:sala" element={<Chat />} />
       <Route path="perfil" element={<Profile />} />
@@ -30,8 +30,8 @@ const AdminRoutes = () => (
         <IonIcon icon={mapOutline} />
         <IonLabel>Mapa</IonLabel>
       </IonTabButton>
-      <IonTabButton tab="solicitudes" href="/app/solicitudes" data-test="tab-solicitudes">
-        <IonIcon icon={receiptOutline} />
+      <IonTabButton tab="reportes" href="/app/reportes" data-test="tab-reportes">
+        <IonIcon icon={megaphoneOutline} />
         <IonLabel>{BRAND.entidades.request.plural}</IonLabel>
       </IonTabButton>
       <IonTabButton tab="chat" href="/app/chat" data-test="tab-chat">

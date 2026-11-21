@@ -6,7 +6,7 @@ import { haySupabase, supabase } from '../lib/supabase';
 import { actualizar, consultar, insertar, leerTabla, sembrarDatos } from '../helpers/localDb';
 import { esEmailValido, hashTexto } from '../helpers/utils';
 
-const CLAVE_SESION = 'app-local:_sesion';
+const CLAVE_SESION = 'reportacali-local:_sesion';
 
 const validar = ({ email, password, nombre }, esRegistro) => {
   if (!esEmailValido(email)) throw new Error('Escribe un correo válido.');
@@ -113,7 +113,7 @@ export const useAuth = () => {
     const id = `local-${crypto.randomUUID?.() ?? Date.now()}`;
     const usuarios = leerTabla('_usuarios');
     usuarios.push({ id, email: correo, nombre: nombre.trim(), rol: 'user', password_hash: await hashTexto(password) });
-    localStorage.setItem('app-local:_usuarios', JSON.stringify(usuarios));
+    localStorage.setItem('reportacali-local:_usuarios', JSON.stringify(usuarios));
     const nuevoPerfil = insertar('profiles', { id, email: correo, nombre: nombre.trim(), rol: 'user', avatar_url: null });
     localStorage.setItem(CLAVE_SESION, id);
     setUsuario({ id, email: correo });
